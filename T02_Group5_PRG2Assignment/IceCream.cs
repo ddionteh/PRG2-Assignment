@@ -1,4 +1,6 @@
-﻿namespace ICTreats
+﻿using System.Text;
+
+namespace ICTreats
 {
     abstract class IceCream
     {
@@ -16,89 +18,39 @@
         {
             this.option = option;
             this.scoops = scoops;
-            this.flavours = flavourList;
-            this.toppings = toppingList;
+            flavours = flavourList;
+            toppings = toppingList;
         }
 
         public abstract double CalculatePrice();
 
         public override string ToString()
         {
-            string flavoursString = string.Empty;
-            foreach (Flavour flavour in flavours)
+            // Memory efficient and performs better than regular string concatenation 
+            var stringBuilder = new StringBuilder();
+            stringBuilder.Append($"Option: {option} Scoops: {scoops}");
+
+            // Checks if there's any flavour
+            if (flavours.Any())
             {
-                flavoursString = flavoursString + '\n' + flavour;
+                stringBuilder.AppendLine();
+                foreach (Flavour flavour in flavours)
+                {
+                    stringBuilder.AppendLine(flavour.ToString());
+                }
             }
-            string toppingsString = string.Empty;
-            foreach (Topping topping in toppings)
+
+            // Checks if there's any toppings
+            if (toppings.Any())
             {
-                toppingsString = toppingsString + '\n' + topping;
+                stringBuilder.AppendLine();
+                foreach (Topping topping in toppings)
+                {
+                    stringBuilder.AppendLine(topping.ToString());
+                }
             }
-            return "Option: " + option + "\tScoops: " + scoops + flavoursString + '\n' + toppingsString;
+
+            return stringBuilder.ToString();
         }
-    }
-
-    class Cup : IceCream
-    {
-        public Cup() { }
-
-        public Cup(string option, int scoops,  List<Flavour> flavourList, List<Topping> toppingList) : base(option, scoops, flavourList, toppingList)
-        {
-
-        }
-
-        public override double CalculatePrice()
-        {
-            return 0.0; // TBC MUST DO
-        }
-
-        public override string ToString()
-        {
-            return base.ToString();
-        }
-    }
-
-    class Cone : IceCream
-    {   
-        public bool dipped { get; set; }
-
-        public Cone() { }
-
-        public Cone(string option, int scoops, List<Flavour> flavourList, List<Topping> toppingList, bool dipped) : base(option, scoops, flavourList, toppingList)
-        {
-            this.dipped = dipped;
-        }
-
-        public override double CalculatePrice()
-        {
-            return 0.0; // TBC MUST DO
-        }
-
-        public override string ToString()
-        {
-            return base.ToString() + "\tDipped: " + dipped;
-        }
-    }
-
-    class Waffle : IceCream
-    {
-
-        public string waffleFlavour { get; set; }
-        public Waffle() { }
-
-        public Waffle(string option, int scoops, List<Flavour> flavourList, List<Topping> toppingList, string waffleFlavour) : base(option, scoops, flavourList, toppingList)
-        {
-            this.waffleFlavour = waffleFlavour;
-        }
-
-        public override double CalculatePrice()
-        {
-            return 0.0; // TBC MUST DO
-        }
-
-        public override string ToString()
-        {
-            return base.ToString() + "\tWaffle flavour: " + waffleFlavour;
-        } 
     }
 }

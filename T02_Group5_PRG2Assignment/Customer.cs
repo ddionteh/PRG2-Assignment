@@ -1,4 +1,7 @@
-﻿namespace ICTreats
+﻿using static System.Formats.Asn1.AsnWriter;
+using System.Text;
+
+namespace ICTreats
 {
     class Customer
     {
@@ -25,22 +28,35 @@
 
         public Order MakeOrder()
         {
-            return currentOrder; // HELP
+            Order order = new Order(); // I cant use the 2 parameters constructor here, need some help Ahmed
+            currentOrder = order;
+            orderHistory.Add(order);
+
+            return order;
         }
 
         public bool IsBirthday()
         {
-            return true; // CHANGE
+            return (currentOrder.timeReceived.Date == dob.Date); // returns true if the customer orders on their birthday
         }
 
         public override string ToString()
         {
-            string orderHistoryString = string.Empty;
-            foreach (Order order in orderHistory)
+            // Memory efficient and performs better than regular string concatenation 
+            var stringBuilder = new StringBuilder();
+            stringBuilder.Append($"Name: {name} Member ID: {memberid} Date Of Birth: {dob} \nCurrent Order: {currentOrder.ToString()} \nOrder History:");
+
+            // Checks if there's any orders in the past
+            if (orderHistory.Any())
             {
-                orderHistoryString = orderHistoryString + '\n' + order.ToString();
+                stringBuilder.AppendLine();
+                foreach (Order order in orderHistory)
+                {
+                    stringBuilder.AppendLine(order.ToString());
+                }
             }
-            return "Name: " + name + "\tMember ID: " + memberid + "\tDate Of Birth: " + dob + "\tCurrent Order: " + currentOrder + "\tOrder History:\n" + orderHistoryString + "\n Rewards: " + rewards;
+
+            return stringBuilder.ToString();
         }
     }
 }

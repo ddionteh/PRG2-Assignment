@@ -1,4 +1,7 @@
-﻿namespace ICTreats
+﻿using static System.Formats.Asn1.AsnWriter;
+using System.Text;
+
+namespace ICTreats
 {
     class Order
     {
@@ -19,33 +22,62 @@
             this.timeReceived = timeReceived;
         }
 
-        public void ModifyIceCream(int id)
+        public void ModifyIceCream(int id) // Ahmed can check if ID supposed to be -1? TQ
         {
-            // help us!
+            try
+            {
+                // HELP LOL 
+            }
+            catch
+            {
+
+            }
         }
 
         public void AddIceCream(IceCream iceCream)
         {
-            // OH NO !
+            iceCreamList.Add(iceCream);
         }
 
         public void DeleteIceCream(int id)
         {
-            // GG WP !
+            try
+            {
+                iceCreamList.RemoveAt(id - 1);
+            }
+            catch (IndexOutOfRangeException) // the only kind of error you would get here
+            {
+                Console.WriteLine("Ice Cream was not found. Please enter a valid ID.");
+            }
+            
         }
         public double CalculateTotal()
         {
-            return 0.0; // GG
+            double TotalPrice = 0;
+            foreach (IceCream iceCream in  iceCreamList)
+            {
+                TotalPrice += iceCream.CalculatePrice();
+            }
+            return TotalPrice;
         }
 
         public override string ToString()
-        {   
-            string iceCreamString = string.Empty;
-            foreach (IceCream iceCream in iceCreamList)
+        {
+            // Memory efficient and performs better than regular string concatenation 
+            var stringBuilder = new StringBuilder();
+            stringBuilder.Append($"ID: {id} Time Received: {timeReceived} Time Fulfilled: {timeFulfilled}");
+
+            // Checks if there's any ice cream in the list
+            if (iceCreamList.Any())
             {
-                iceCreamString = iceCreamString + '\n' + iceCream; 
+                stringBuilder.AppendLine();
+                foreach (IceCream iceCream in iceCreamList)
+                {
+                    stringBuilder.AppendLine(iceCream.ToString());
+                }
             }
-            return "ID: " + id + "\tTime Received: " + timeReceived + "\tTime Fulfilled: " + timeFulfilled + iceCreamString;
+
+            return stringBuilder.ToString();
         }
     }
 }

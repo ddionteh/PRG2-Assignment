@@ -14,11 +14,33 @@
         {
             this.points = points;
             this.punchCard = punchCard;
+
+            if (points >= 100)
+            {
+                tier = "Gold";
+            }
+            else if (points >= 50) 
+            {
+                tier = "Silver";
+            }
+            else
+            {
+                tier = "Ordinary";
+            }
         }
 
-        public void AddPoints(int points)
+        public void AddPoints(int Points)
         {
-            this.points += points; // CHANGE ?
+            points += (int)Math.Floor(Points * 0.72);
+
+            if (points >= 100)
+            {
+                tier = "Gold";
+            }
+            else if (points >= 50)
+            {
+                tier = "Silver";
+            }
         }
 
         public void RedeemPoints(int points)
@@ -28,12 +50,17 @@
 
         public void Punch()
         {
-            // what is this?
+            if (punchCard == 10)
+            {
+                punchCard = 0;
+                return;
+            }
+            punchCard++;
         }
 
         public override string ToString()
         {
-            return "Points: " + points + "\tPunch Card: " + punchCard + "\tTier: " + tier;
+            return $"Points: {points} Punch Card: {punchCard} Tier: {tier}";
         }
 
 
