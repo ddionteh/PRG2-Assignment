@@ -1,4 +1,9 @@
-﻿using System.Text;
+﻿//==========================================================
+// Student Number : S10258624J
+// Student Name : Diontae Low
+// Partner Name : Ahmed Uzair
+//==========================================================
+using System.Text;
 
 namespace ICTreats
 {

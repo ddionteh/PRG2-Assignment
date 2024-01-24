@@ -1,4 +1,9 @@
-﻿using static System.Formats.Asn1.AsnWriter;
+﻿//==========================================================
+// Student Number : S10258624J
+// Student Name : Diontae Low
+// Partner Name : Ahmed Uzair
+//==========================================================
+using static System.Formats.Asn1.AsnWriter;
 using System.Text;
 
 namespace ICTreats
@@ -22,15 +27,107 @@ namespace ICTreats
             this.timeReceived = timeReceived;
         }
 
-        public void ModifyIceCream(int id) // Ahmed can check if ID supposed to be -1? TQ
-        {
-            try
-            {
-                // HELP LOL 
-            }
-            catch
-            {
+        public void ModifyIceCream(int id) 
+        {   
+           void ModifyOption()
+           {
+                Console.WriteLine("Options available:");
+               // foreach (string option in option)
 
+            }
+           IceCream modifyIceCream = iceCreamList[id-1];
+
+           if (modifyIceCream is Cup)
+            {
+                Console.WriteLine("[1] Modify option \n[2] Modify number of scoops \n[3] Modify flavours \n[4] Modify toppings");
+                Console.Write("Enter the number for the modifications to make to the ice cream: ");
+
+                try
+                {
+                    int modifyOption = int.Parse(Console.ReadLine());
+                    switch (modifyOption)
+                    {
+                        case 1:
+                            ModifyOption();
+                            break;
+                        case 2:
+                            break;
+                        case 3:
+                            break;
+                        case 4:
+                            break;
+                        default:
+                            throw new ArgumentOutOfRangeException(nameof(modifyOption), $"Invalid option: {modifyOption}");
+                    }
+                }
+                catch (FormatException ex)
+                {
+                    Console.WriteLine(ex.Message);
+                    Console.WriteLine("Please enter an integer!");
+                    return;
+                }
+            }
+           else if (modifyIceCream is Cone)
+            {
+                Console.WriteLine("[1] Modify option \n[2] Modify number of scoops \n[3] Modify flavours \n[4] Modify toppings" +
+                "\n[5] Modify dipped cone");
+                Console.Write("Enter the number for the modifications to make to the ice cream: ");
+
+                try
+                {
+                    int modifyOption = int.Parse(Console.ReadLine());
+                    switch (modifyOption)
+                    {
+                        case 1:
+
+                            break;
+                        case 2:
+                            break;
+                        case 3:
+                            break;
+                        case 4:
+                            break;
+                        default:
+                            throw new ArgumentOutOfRangeException(nameof(modifyOption), $"Invalid option: {modifyOption}");
+                    }
+                }
+                catch (FormatException ex)
+                {
+                    Console.WriteLine(ex.Message);
+                    Console.WriteLine("Please enter an integer!");
+                    return;
+                }
+            }
+           else
+            {
+                Console.WriteLine("[1] Modify option \n[2] Modify number of scoops \n[3] Modify flavours \n[4] Modify toppings" +
+                "\n[5] Modify waffle flavour");
+                Console.Write("Enter the number for the modifications to make to the ice cream: ");
+
+                try
+                {
+                    int modifyOption = int.Parse(Console.ReadLine());
+                    switch (modifyOption)
+                    {
+                        case 1:
+
+                            break;
+                        case 2:
+                            break;
+                        case 3:
+                            break;
+                        case 4:
+                            break;
+                        default:
+                            throw new ArgumentOutOfRangeException(nameof(modifyOption), $"Invalid option: {modifyOption}");
+                    }
+                }
+                catch (FormatException ex)
+                {
+                    Console.WriteLine(ex.Message);
+                    Console.WriteLine("Please enter an integer!");
+                    return;
+                }
             }
         }
 

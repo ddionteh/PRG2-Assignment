@@ -1,4 +1,9 @@
-﻿using static System.Formats.Asn1.AsnWriter;
+﻿//==========================================================
+// Student Number : S10258624J
+// Student Name : Diontae Low
+// Partner Name : Ahmed Uzair
+//==========================================================
+using static System.Formats.Asn1.AsnWriter;
 using System.Text;
 
 namespace ICTreats
@@ -28,11 +33,11 @@ namespace ICTreats
 
         public Order MakeOrder()
         {
-            Order order = new Order(); // I cant use the 2 parameters constructor here, need some help Ahmed
+            Order order = new Order(); 
             currentOrder = order;
             orderHistory.Add(order);
 
-            return order;
+            return order; // reference-type
         }
 
         public bool IsBirthday()
@@ -42,21 +47,33 @@ namespace ICTreats
 
         public override string ToString()
         {
-            // Memory efficient and performs better than regular string concatenation 
             var stringBuilder = new StringBuilder();
-            stringBuilder.Append($"Name: {name} Member ID: {memberid} Date Of Birth: {dob} \nCurrent Order: {currentOrder.ToString()} \nOrder History:");
+            stringBuilder.Append($"Name: {name} Member ID: {memberid} Date Of Birth: {dob.ToShortDateString()} ");
 
-            // Checks if there's any orders in the past
+            if (currentOrder != null)
+            {
+                stringBuilder.Append($"\nCurrent Order: {currentOrder}");
+            }
+            else
+            {
+                stringBuilder.Append("\nCurrent Order: None");
+            }
+
+            stringBuilder.Append("\nOrder History:");
             if (orderHistory.Any())
             {
-                stringBuilder.AppendLine();
                 foreach (Order order in orderHistory)
                 {
                     stringBuilder.AppendLine(order.ToString());
                 }
             }
+            else
+            {
+                stringBuilder.AppendLine(" None");
+            }
 
             return stringBuilder.ToString();
         }
+
     }
 }

@@ -1,4 +1,9 @@
-﻿using System.Text;
+﻿//==========================================================
+// Student Number : S10258624J
+// Student Name : Diontae Low
+// Partner Name : Ahmed Uzair
+//==========================================================
+using System.Text;
 
 namespace ICTreats
 {
@@ -6,7 +11,7 @@ namespace ICTreats
     {
 
         public string waffleFlavour { get; set; }
-        public Waffle() { }
+        public Waffle() : base() { }
 
         public Waffle(string option, int scoops, List<Flavour> flavourList, List<Topping> toppingList, string waffleFlavour) : base(option, scoops, flavourList, toppingList)
         {
@@ -28,12 +33,36 @@ namespace ICTreats
                     break;
                 case 1: // single scoop
                     TotalPrice += 7.00;
+
+                    for (int i = 0; i < 1; i++)
+                    {
+                        if (flavours[i].premium == true)
+                        {
+                            TotalPrice += 2.00;
+                        }
+                    }
                     break;
                 case 2: // double scoops
                     TotalPrice += 8.50;
+
+                    for (int i = 0; i < 2; i++)
+                    {
+                        if (flavours[i].premium == true)
+                        {
+                            TotalPrice += 2.00;
+                        }
+                    }
                     break;
                 case 3: // tripe scoops
                     TotalPrice += 9.50;
+
+                    for (int i = 0; i < 3; i++)
+                    {
+                        if (flavours[i].premium == true)
+                        {
+                            TotalPrice += 2.00;
+                        }
+                    }
                     break;
             }
 

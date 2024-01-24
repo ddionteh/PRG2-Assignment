@@ -1,10 +1,15 @@
-﻿using System.Text;
+﻿//==========================================================
+// Student Number : S10258624J
+// Student Name : Diontae Low
+// Partner Name : Ahmed Uzair
+//==========================================================
+using System.Text;
 
 namespace ICTreats
 {
     class Cup : IceCream
     {
-        public Cup() { }
+        public Cup() : base() { }
 
         public Cup(string option, int scoops,  List<Flavour> flavourList, List<Topping> toppingList) : base(option, scoops, flavourList, toppingList)
         {
@@ -20,12 +25,36 @@ namespace ICTreats
                     break;
                 case 1: // single scoop
                     TotalPrice += 4.00;
+
+                    for (int i = 0; i < 1 ; i++)
+                    {
+                        if (flavours[i].premium == true )
+                        {
+                            TotalPrice += 2.00;
+                        }
+                    }
                     break;
                 case 2: // double scoops
                     TotalPrice += 5.50;
+
+                    for (int i = 0; i < 2; i++)
+                    {
+                        if (flavours[i].premium == true)
+                        {
+                            TotalPrice += 2.00;
+                        }
+                    }
                     break;
                 case 3: // tripe scooops
                     TotalPrice += 6.50;
+
+                    for (int i = 0; i < 3; i++)
+                    {
+                        if (flavours[i].premium == true)
+                        {
+                            TotalPrice += 2.00;
+                        }
+                    }
                     break;
             }
             TotalPrice += toppings.Count;
