@@ -91,7 +91,6 @@ namespace ICTreats
                         Customer customer = new Customer(splitLine[0], int.Parse(splitLine[1]), Convert.ToDateTime(splitLine[2]));
                         customer.rewards = new PointCard(int.Parse(splitLine[4]), int.Parse(splitLine[5]));
                         customerDict.Add(customer.memberid, customer);
-                        Console.WriteLine(customer.ToString());
                     }
 
                 }
@@ -191,16 +190,14 @@ namespace ICTreats
                     string line;
                     while ((line = sr.ReadLine()) != null)
                     {
-                        Console.WriteLine(line);
                         // Split into elements and remove all leading or trailing whitespace
                         string[] splitLine = line.Split(',').Select(s => s.Trim().ToLower()).ToArray();
-
                         // Reference to the customer who made the order
                         Customer customer = customerDict[int.Parse(splitLine[1])];
 
-                        Console.WriteLine(customer);
                         Order order = new Order(int.Parse(splitLine[0]), Convert.ToDateTime(splitLine[2]));
-                        Console.WriteLine(order);
+
+
                         if (!String.IsNullOrWhiteSpace(splitLine[3]))
                         {
                             order.timeFulfilled = Convert.ToDateTime(splitLine[3]);
@@ -238,11 +235,16 @@ namespace ICTreats
                                     }
                                     flavours.Add(new Flavour((splitLine[i]), premium, 1));
                                 }
+                                Console.WriteLine(splitLine[i], premium);
+                            }
+                            else if (String.IsNullOrEmpty(splitLine[i])) 
+                            {
+                                continue;
                             }
                             else
                             {
                                 Console.WriteLine("Error, no such flavour available.");
-                                break;
+                                continue;
                             }
                         }
 
@@ -254,10 +256,14 @@ namespace ICTreats
                             {
                                 toppings.Add(new Topping(splitLine[i]));
                             }
+                            else if (String.IsNullOrEmpty(splitLine[i]))
+                            {
+                                continue;
+                            }
                             else
                             {
                                 Console.WriteLine("Error, no such topping available.");
-                                break;
+                                continue;
                             }
                         }
 
@@ -274,7 +280,7 @@ namespace ICTreats
                                     Order customerOrder1 = customer.MakeOrder();
                                     customerOrder1 = order;
 
-                                    break;
+                                    continue;
                                 case "cone":
                                     IceCream iceCreamCone = new Cone(splitLine[4], int.Parse(splitLine[5]), flavours, toppings, bool.Parse(splitLine[5]));
                                     order.AddIceCream(iceCreamCone);
@@ -282,7 +288,8 @@ namespace ICTreats
                                     // customerOrder2 is referencing the specific Order that is returned by the function
                                     Order customerOrder2 = customer.MakeOrder();
                                     customerOrder2 = order;
-                                    break;
+
+                                    continue;
                                 case "waffle":
                                     IceCream iceCreamWaffle = new Waffle(splitLine[4], int.Parse(splitLine[5]), flavours, toppings, splitLine[6]);
                                     order.AddIceCream(iceCreamWaffle);
@@ -290,16 +297,17 @@ namespace ICTreats
                                     // customerOrder3 is referencing the specific Order that is returned by the function
                                     Order customerOrder3 = customer.MakeOrder();
                                     customerOrder3 = order;
-                                    break;
+
+                                    continue;
                                 default:
                                     Console.WriteLine("Error, no such option available");
-                                    break;
+                                    continue;
                             }
                         }
                         else
                         {
                             Console.WriteLine("Error, no such option available");
-                            break;
+                            continue;
                         }
                     }
 
