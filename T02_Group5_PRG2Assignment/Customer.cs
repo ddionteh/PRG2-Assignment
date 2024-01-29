@@ -42,24 +42,25 @@ namespace ICTreats
 
         public bool IsBirthday()
         {
-            return (currentOrder.timeReceived.Date == dob.Date); // returns true if the customer orders on their birthday
+            // returns true if the customer orders on their birthday
+            return ((currentOrder.timeReceived.Month == dob.Month) && (currentOrder.timeReceived.Day == dob.Day)); 
         }
 
         public override string ToString()
         {
             var stringBuilder = new StringBuilder();
-            stringBuilder.Append($"Name: {name} Member ID: {memberid} Date Of Birth: {dob.ToShortDateString()} ");
+            stringBuilder.Append($"Name: {Program.CapitalizeFirstLetter(name)} Member ID: {memberid} Date Of Birth: {dob.ToShortDateString()} ");
 
             if (currentOrder != null)
             {
-                stringBuilder.Append($"\nCurrent Order: {currentOrder}");
+                stringBuilder.Append($"\nCurrent Order: \n{currentOrder.ToString()}");
             }
             else
             {
                 stringBuilder.Append("\nCurrent Order: None");
             }
 
-            stringBuilder.Append("\nOrder History:");
+            stringBuilder.Append("\nOrder History:\n");
             if (orderHistory.Any())
             {
                 foreach (Order order in orderHistory)

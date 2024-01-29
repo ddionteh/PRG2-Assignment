@@ -4,6 +4,7 @@
 // Partner Name : Ahmed Uzair
 //==========================================================
 using System.Text;
+using System.Xml.Linq;
 
 namespace ICTreats
 {
@@ -33,25 +34,26 @@ namespace ICTreats
         {
             // Memory efficient and performs better than regular string concatenation 
             var stringBuilder = new StringBuilder();
-            stringBuilder.Append($"Option: {option} Scoops: {scoops}");
+            stringBuilder.Append($"Option: {Program.CapitalizeFirstLetter(option)} Scoops: {scoops}");
 
             // Checks if there's any flavour
             if (flavours.Any())
             {
                 stringBuilder.AppendLine();
+                stringBuilder.AppendLine("Flavours:");
                 foreach (Flavour flavour in flavours)
                 {
-                    stringBuilder.AppendLine(flavour.ToString());
+                    stringBuilder.AppendLine(Program.CapitalizeFirstLetter(flavour.ToString()));
                 }
             }
 
             // Checks if there's any toppings
             if (toppings.Any())
             {
-                stringBuilder.AppendLine();
+                stringBuilder.AppendLine("Toppings:");
                 foreach (Topping topping in toppings)
                 {
-                    stringBuilder.AppendLine(topping.ToString());
+                    stringBuilder.AppendLine(Program.CapitalizeFirstLetter(topping.ToString()));
                 }
             }
 

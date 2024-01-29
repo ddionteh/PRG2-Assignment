@@ -38,11 +38,11 @@ namespace ICTreats
         {
             points += (int)Math.Floor(Points * 0.72);
 
-            if (points >= 100)
+            if (points >= 100) 
             {
                 tier = "Gold";
             }
-            else if (points >= 50)
+            else if (points >= 50 && tier == "Ordinary")
             {
                 tier = "Silver";
             }
@@ -50,7 +50,7 @@ namespace ICTreats
 
         public void RedeemPoints(int points)
         {
-            this.points -= points; // CHANGE ?
+            this.points -= points; 
         }
 
         public void Punch()

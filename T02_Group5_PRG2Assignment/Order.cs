@@ -5,6 +5,7 @@
 //==========================================================
 using static System.Formats.Asn1.AsnWriter;
 using System.Text;
+using System.Xml.Linq;
 
 namespace ICTreats
 {
@@ -14,7 +15,6 @@ namespace ICTreats
 
         public DateTime timeReceived { get; set;}
 
-        // Find out how this works !!!!
         public DateTime? timeFulfilled { get; set;}
 
         public List<IceCream> iceCreamList { get; set;} = new List<IceCream>();
@@ -32,14 +32,18 @@ namespace ICTreats
            void ModifyOption()
            {
                 Console.WriteLine("Options available:");
-               // foreach (string option in option)
+                foreach (string option in Program.optionsAvailable.Keys)
+                {
+                    Console.Write($"{Program.CapitalizeFirstLetter(option),-15}");
+                }
 
             }
            IceCream modifyIceCream = iceCreamList[id-1];
 
            if (modifyIceCream is Cup)
-            {
-                Console.WriteLine("[1] Modify option \n[2] Modify number of scoops \n[3] Modify flavours \n[4] Modify toppings");
+           {
+                Console.WriteLine("[1] Modify option \n[2] Modify number of scoops \n[3] Modify flavours \n[4] Modify toppings" +
+                    "\n[5]");
                 Console.Write("Enter the number for the modifications to make to the ice cream: ");
 
                 try
@@ -66,69 +70,11 @@ namespace ICTreats
                     Console.WriteLine("Please enter an integer!");
                     return;
                 }
-            }
-           else if (modifyIceCream is Cone)
-            {
-                Console.WriteLine("[1] Modify option \n[2] Modify number of scoops \n[3] Modify flavours \n[4] Modify toppings" +
-                "\n[5] Modify dipped cone");
-                Console.Write("Enter the number for the modifications to make to the ice cream: ");
-
-                try
-                {
-                    int modifyOption = int.Parse(Console.ReadLine());
-                    switch (modifyOption)
-                    {
-                        case 1:
-
-                            break;
-                        case 2:
-                            break;
-                        case 3:
-                            break;
-                        case 4:
-                            break;
-                        default:
-                            throw new ArgumentOutOfRangeException(nameof(modifyOption), $"Invalid option: {modifyOption}");
-                    }
-                }
-                catch (FormatException ex)
+                catch (Exception ex)
                 {
                     Console.WriteLine(ex.Message);
-                    Console.WriteLine("Please enter an integer!");
-                    return;
                 }
-            }
-           else
-            {
-                Console.WriteLine("[1] Modify option \n[2] Modify number of scoops \n[3] Modify flavours \n[4] Modify toppings" +
-                "\n[5] Modify waffle flavour");
-                Console.Write("Enter the number for the modifications to make to the ice cream: ");
-
-                try
-                {
-                    int modifyOption = int.Parse(Console.ReadLine());
-                    switch (modifyOption)
-                    {
-                        case 1:
-
-                            break;
-                        case 2:
-                            break;
-                        case 3:
-                            break;
-                        case 4:
-                            break;
-                        default:
-                            throw new ArgumentOutOfRangeException(nameof(modifyOption), $"Invalid option: {modifyOption}");
-                    }
-                }
-                catch (FormatException ex)
-                {
-                    Console.WriteLine(ex.Message);
-                    Console.WriteLine("Please enter an integer!");
-                    return;
-                }
-            }
+           }
         }
 
         public void AddIceCream(IceCream iceCream)
@@ -168,9 +114,13 @@ namespace ICTreats
             if (iceCreamList.Any())
             {
                 stringBuilder.AppendLine();
+
+                int x = 1;
                 foreach (IceCream iceCream in iceCreamList)
                 {
+                    stringBuilder.Append($"-----ICE CREAM [{x}]-----\n");
                     stringBuilder.AppendLine(iceCream.ToString());
+                    x++;
                 }
             }
 

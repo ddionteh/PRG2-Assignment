@@ -26,7 +26,7 @@ namespace ICTreats
                 case 1: // single scoop
                     TotalPrice += 4.00;
 
-                    for (int i = 0; i < 1 ; i++)
+                    for (int i = 0; i < scoops; i++)
                     {
                         if (flavours[i].premium == true )
                         {
@@ -37,7 +37,7 @@ namespace ICTreats
                 case 2: // double scoops
                     TotalPrice += 5.50;
 
-                    for (int i = 0; i < 2; i++)
+                    for (int i = 0; i < scoops; i++)
                     {
                         if (flavours[i].premium == true)
                         {
@@ -48,7 +48,7 @@ namespace ICTreats
                 case 3: // tripe scooops
                     TotalPrice += 6.50;
 
-                    for (int i = 0; i < 3; i++)
+                    for (int i = 0; i < scoops; i++)
                     {
                         if (flavours[i].premium == true)
                         {

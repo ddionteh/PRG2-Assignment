@@ -4,6 +4,7 @@
 // Partner Name : Ahmed Uzair
 //==========================================================
 using System.Text;
+using System.Xml.Linq;
 
 namespace ICTreats
 {
@@ -19,7 +20,7 @@ namespace ICTreats
         }
 
         public override double CalculatePrice()
-        {
+        {   
             double TotalPrice = 0;
 
             if (waffleFlavour != "Original")
@@ -34,7 +35,7 @@ namespace ICTreats
                 case 1: // single scoop
                     TotalPrice += 7.00;
 
-                    for (int i = 0; i < 1; i++)
+                    for (int i = 0; i < scoops; i++)
                     {
                         if (flavours[i].premium == true)
                         {
@@ -45,7 +46,7 @@ namespace ICTreats
                 case 2: // double scoops
                     TotalPrice += 8.50;
 
-                    for (int i = 0; i < 2; i++)
+                    for (int i = 0; i < scoops; i++)
                     {
                         if (flavours[i].premium == true)
                         {
@@ -53,10 +54,10 @@ namespace ICTreats
                         }
                     }
                     break;
-                case 3: // tripe scoops
+                case 3: // triple scoops
                     TotalPrice += 9.50;
 
-                    for (int i = 0; i < 3; i++)
+                    for (int i = 0; i < scoops; i++)
                     {
                         if (flavours[i].premium == true)
                         {
@@ -73,7 +74,7 @@ namespace ICTreats
 
         public override string ToString()
         {
-            return $"{base.ToString()} Waffle Flavour: {waffleFlavour}";
+            return $"{base.ToString()}Waffle Flavour: {Program.CapitalizeFirstLetter(waffleFlavour)}";
         } 
     }
 }
