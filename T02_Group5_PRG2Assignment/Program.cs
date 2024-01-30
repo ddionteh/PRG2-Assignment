@@ -33,7 +33,7 @@ namespace ICTreats
         public static Dictionary<string, double> waffleFlavour = new Dictionary<string, double>() { { "original", 0 } };
 
         // stores the type of ice cream (options) available as key and value
-        // hard coded this bcuz a new ice cream class needs to be created to work anyway
+        // hard coded this bcuz a new ice cream class needs to be manually created to work anyway
         public static Dictionary<string, string> optionsAvailable = new Dictionary<string, string> { { "cup", "cup" }, { "cone", "cone" }, { "waffle", "waffle" } };
 
         public static string CapitalizeFirstLetter(string input)
@@ -121,7 +121,7 @@ namespace ICTreats
                     {
                         // Split into elements and remove all leading or trailing whitespace
                         string[] splitLine = line.Split(',').Select(s => s.Trim().ToLower()).ToArray();
-                        Customer customer = new Customer(splitLine[0], int.Parse(splitLine[1]), Convert.ToDateTime(splitLine[2]));
+                        Customer customer = new Customer(splitLine[0], int.Parse(splitLine[1]), DateTime.ParseExact(splitLine[2], "dd/MM/yyyy", CultureInfo.InvariantCulture));
                         customer.rewards = new PointCard(int.Parse(splitLine[4]), int.Parse(splitLine[5]));
                         customerDict.Add(customer.memberid, customer);
                     }
@@ -337,9 +337,10 @@ namespace ICTreats
             // Option 1
             void DisplayAllCustomers()
             {
+                Console.WriteLine($"{"Name",-15}{"Member ID",-10}{"Date Of Birth",-15}{"Membership Status",-20}{"Membership Points",-20}{"Punch Card",-10}");
                 foreach (Customer customer in customerDict.Values)
                 {
-                    Console.WriteLine(customer.ToString());
+                    Console.WriteLine($"{customer.name,-15}{customer.memberid,-10}{customer.dob.ToShortDateString(),-15}{customer.rewards.tier,-20}{customer.rewards.points,-20}{customer.rewards.punchCard,-10}");
                 }
             }
 
@@ -397,7 +398,7 @@ namespace ICTreats
                 }
 
                 Console.Write("Enter your date of birth (in dd/mm/YYYY format): ");
-                DateTime dob = Convert.ToDateTime(Console.ReadLine());
+                DateTime dob = DateTime.Parse(Console.ReadLine()).Date;
 
                 Customer customer = new Customer(name, id, dob);
                 PointCard pointCard = new PointCard(0, 0);
@@ -416,18 +417,15 @@ namespace ICTreats
             // Option 4
             void CreateCustomerOrder()
             {
-                int x = 1;
-                foreach (Customer customer in customerDict.Values)
-                {
-                    Console.WriteLine($"[{x}] {customer.ToString()}");
-                    x++;
-                }
+                DisplayAllCustomers();
 
                 Console.Write("Enter a customer ID to be retrieved: ");
                 int id = int.Parse(Console.ReadLine());
 
                 Customer retrievedCustomer = customerDict[id];
                 Order order = retrievedCustomer.MakeOrder();
+                order.timeReceived = DateTime.Now.Date;
+                order.id = regularQueue.Count() + goldQueue.Count() + 1;
                 AddIceCream(retrievedCustomer, maxScoops);
 
                 while (true)
@@ -625,12 +623,7 @@ namespace ICTreats
             // Option 5
             void DisplayCustomerOrderDetails()
             {
-                int x = 1;
-                foreach (Customer customer in customerDict.Values)
-                {
-                    Console.WriteLine($"[{x}] {customer.ToString()}");
-                    x++;
-                }
+                DisplayAllCustomers();
 
                 Console.Write("Enter the Member ID of the customer (6 digits): ");
                 int id = int.Parse(Console.ReadLine());
@@ -649,6 +642,68 @@ namespace ICTreats
             // Option 6
             void ModifyOrderDetails()
             {
+                DisplayAllCustomers();
+
+                Console.Write("Select a customer by ID: ");
+
+                // ahmed u can seperate for validation if uw
+                Customer selectedCustomer = customerDict[int.Parse(Console.ReadLine())]; 
+
+                if (selectedCustomer.currentOrder == null)
+                {
+                    Console.WriteLine("There is no order currently!");
+                    return;
+                }
+
+                int iceCreamNumber = 1;
+                foreach (IceCream iceCream in selectedCustomer.currentOrder.iceCreamList)
+                {
+                    Console.WriteLine($"Ice Cream {iceCreamNumber}: {iceCream.ToString()}");
+                    iceCreamNumber++;
+                }
+
+
+                Console.WriteLine("[1] Modify an existing ice cream \n[2] Add new ice cream to order \n[3] Delete existing ice cream from order \n[0] Exit to main menu");
+
+                Console.Write("Choose one of the options above: ");
+                int option = int.Parse(Console.ReadLine());
+
+                switch (option)
+                {
+                    case 0:
+                        break;
+                    case 1:
+                        Console.Write("Select the numerical value of the ice cream to modify: ");
+                        int selectedIceCreamNumber = int.Parse(Console.ReadLine());
+
+                        selectedCustomer.currentOrder.ModifyIceCream(selectedIceCreamNumber - 1); // still broken, fix it later
+                        break;
+                    case 2:
+                        AddIceCream(selectedCustomer, maxScoops); // i think this shld work, idk bro its 3 am
+                        break;
+                    case 3:
+                        while (true)
+                        {
+                            Console.Write("Select the numerical value of the ice cream to delete: ");
+                            int iceCreamDelete = int.Parse(Console.ReadLine());  // validate it to be within the scope
+
+                            if (selectedCustomer.currentOrder.iceCreamList.Count == 1)
+                            {
+                                Console.WriteLine("Not allowed to remove the only ice cream in the order.");
+                                continue;
+                            }
+                            else if (selectedCustomer.currentOrder.iceCreamList.Count == 0)
+                            {
+                                Console.WriteLine("There is no ice cream to delete!");
+                                break;
+                            }
+                            selectedCustomer.currentOrder.DeleteIceCream(iceCreamDelete - 1);
+                            break;
+                        }
+                        Console.WriteLine("--------Updated Order--------");
+                        Console.WriteLine(selectedCustomer.currentOrder.ToString());
+                        break;
+                }
 
             }
         }
