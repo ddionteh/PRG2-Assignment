@@ -23,7 +23,7 @@ namespace ICTreats
         {   
             double TotalPrice = 0;
 
-            if (waffleFlavour != "Original")
+            if (waffleFlavour != "original")
             {
                 TotalPrice += 3;
             }

@@ -8,7 +8,9 @@ using ICTreats;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.SymbolStore;
+using System.Globalization;
 using System.Linq;
+using System.Reflection.Metadata.Ecma335;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -17,15 +19,21 @@ namespace ICTreats
     class Program
     {
         // O(1) lookup time complexity, hence dictionary over list (below)
+
         // allows me to check for the flavour available faster than list
         public static Dictionary<int, Customer> customerDict = new Dictionary<int, Customer>();
+
         // stores the type of flavour (key) available and value is true if flavour is premium
         public static Dictionary<string, bool> flavourDict = new Dictionary<string, bool>();
+
         // stores the type of topping (key) available and cost (placeholder)
         public static Dictionary<string, double> toppingDict = new Dictionary<string, double>();
+
         // stores the type of waffle flavour (key) available and cost (placeholder)
-        public static Dictionary<string, double> waffleFlavour = new Dictionary<string, double>();
+        public static Dictionary<string, double> waffleFlavour = new Dictionary<string, double>() { { "original", 0 } };
+
         // stores the type of ice cream (options) available as key and value
+        // hard coded this bcuz a new ice cream class needs to be created to work anyway
         public static Dictionary<string, string> optionsAvailable = new Dictionary<string, string> { { "cup", "cup" }, { "cone", "cone" }, { "waffle", "waffle" } };
 
         public static string CapitalizeFirstLetter(string input)
@@ -42,6 +50,7 @@ namespace ICTreats
         {
             Queue<Order> regularQueue = new Queue<Order>();
             Queue<Order> goldQueue = new Queue<Order>();
+            int maxScoops = 3;
 
             // Getting data into the program first
             CustomerCreation();
@@ -52,8 +61,8 @@ namespace ICTreats
 
             int option = -1;
             while (option != 0)
-            {   
-                try 
+            {
+                try
                 {
                     DisplayMenu();
                 }
@@ -69,7 +78,7 @@ namespace ICTreats
                 Console.WriteLine("========ICE CREAM SHOP MENU========");
                 Console.WriteLine("[1] List all customers \n[2] List all current orders \n[3] Register a new customer " +
                     "\n[4] Create a new customer's order \n[5] Display order details of a customer \n[6] Modify order details \n[0] Exit program");
-                Console.WriteLine("==================================="); 
+                Console.WriteLine("===================================");
                 Console.Write("Enter your option: ");
                 option = int.Parse(Console.ReadLine());
 
@@ -83,8 +92,17 @@ namespace ICTreats
                     case 2: // Option 2
                         DisplayQueue();
                         break;
-                    case 3:
+                    case 3: // Option 3
                         RegisterCustomer();
+                        break;
+                    case 4: // Option 4
+                        CreateCustomerOrder();
+                        break;
+                    case 5: // Option 5
+                        DisplayCustomerOrderDetails();
+                        break;
+                    case 6: // Option 6
+                        ModifyOrderDetails();
                         break;
                     default:
                         throw new ArgumentOutOfRangeException(nameof(option), $"Enter a valid option!");
@@ -100,7 +118,7 @@ namespace ICTreats
 
                     string line;
                     while ((line = sr.ReadLine()) != null)
-                    {   
+                    {
                         // Split into elements and remove all leading or trailing whitespace
                         string[] splitLine = line.Split(',').Select(s => s.Trim().ToLower()).ToArray();
                         Customer customer = new Customer(splitLine[0], int.Parse(splitLine[1]), Convert.ToDateTime(splitLine[2]));
@@ -168,8 +186,8 @@ namespace ICTreats
 
                         // checks if the waffle flavour is not inside
                         if (!waffleFlavour.ContainsKey(splitLine[4]))
-                        {
-                            waffleFlavour.Add(splitLine[4], 3); 
+                        {   
+                            waffleFlavour.Add(splitLine[4], 3);
                         }
                     }
                 }
@@ -192,7 +210,7 @@ namespace ICTreats
 
                         bool newOrder = true;
                         Order order;
-                        if (customer.currentOrder != null && customer.currentOrder.timeReceived == Convert.ToDateTime(splitLine[2])) 
+                        if (customer.currentOrder != null && customer.currentOrder.timeReceived == Convert.ToDateTime(splitLine[2]))
                         {
                             order = customer.currentOrder;
                             newOrder = false;
@@ -214,8 +232,8 @@ namespace ICTreats
                         List<Flavour> flavours = new List<Flavour>();
                         List<Topping> toppings = new List<Topping>();
 
-                        // Maximum of 3 flavours
-                        for (int i = 8; i < 8 + 3; i++)
+                        // assuming minimum scoop is 1
+                        for (int i = 8; i < 8 + maxScoops; i++)
                         {
                             // if-else is faster than try-catch here
                             // Checking if flavour actually exists
@@ -236,10 +254,10 @@ namespace ICTreats
 
                                 if (!isFound)
                                 {
-                                    flavours.Add(new Flavour((splitLine[i]), premium, 1));
+                                    flavours.Add(new Flavour(splitLine[i], premium, 1));
                                 }
                             }
-                            else if (String.IsNullOrEmpty(splitLine[i])) 
+                            else if (String.IsNullOrEmpty(splitLine[i]))
                             {
                                 continue;
                             }
@@ -251,7 +269,7 @@ namespace ICTreats
                         }
 
                         // Adding toppings 
-                        for (int i = 11; i < splitLine.Length; i++)
+                        for (int i = 8 + maxScoops; i < splitLine.Length; i++)
                         {
                             // if-else is faster than try-catch here
                             // Checking if toppings actually exists
@@ -270,7 +288,6 @@ namespace ICTreats
                             }
                         }
 
-
                         // checking if the option exists
                         if (optionsAvailable.ContainsKey(splitLine[4]))
                         {
@@ -283,12 +300,12 @@ namespace ICTreats
                                 }
                             }
                             else if (newOrder == true)
-                            {   
+                            {
                                 regularQueue.Enqueue(order);
                             }
 
                             switch (splitLine[4])
-                            {   
+                            {
                                 case "cup":
                                     IceCream iceCreamCup = new Cup(splitLine[4], int.Parse(splitLine[5]), flavours, toppings);
                                     order.AddIceCream(iceCreamCup);
@@ -312,7 +329,7 @@ namespace ICTreats
                         else
                         {
                             Console.WriteLine("Error, no such option available");
-                        } 
+                        }
                     }
                 }
             }
@@ -381,9 +398,9 @@ namespace ICTreats
 
                 Console.Write("Enter your date of birth (in dd/mm/YYYY format): ");
                 DateTime dob = Convert.ToDateTime(Console.ReadLine());
-                
+
                 Customer customer = new Customer(name, id, dob);
-                PointCard pointCard = new PointCard(0,0);
+                PointCard pointCard = new PointCard(0, 0);
                 customer.rewards = pointCard;
 
                 using (StreamWriter sw = new StreamWriter("customers.csv", true))
@@ -393,9 +410,247 @@ namespace ICTreats
 
                 Console.WriteLine("Registration successful!");
 
-                customerDict.Add(customer.memberid,customer);
+                customerDict.Add(customer.memberid, customer);
             }
 
+            // Option 4
+            void CreateCustomerOrder()
+            {
+                int x = 1;
+                foreach (Customer customer in customerDict.Values)
+                {
+                    Console.WriteLine($"[{x}] {customer.ToString()}");
+                    x++;
+                }
+
+                Console.Write("Enter a customer ID to be retrieved: ");
+                int id = int.Parse(Console.ReadLine());
+
+                Customer retrievedCustomer = customerDict[id];
+                Order order = retrievedCustomer.MakeOrder();
+                AddIceCream(retrievedCustomer, maxScoops);
+
+                while (true)
+                {
+                    Console.Write("Would you like to add another ice cream to the order? (Y/N): ");
+                    string addAnotherAnswer = Console.ReadLine().Trim().ToUpper();
+
+                    if (addAnotherAnswer == "Y")
+                    {
+                        AddIceCream(retrievedCustomer, maxScoops);
+                        continue;
+                    }
+                    else if (addAnotherAnswer == "N")
+                    {
+                        break;
+                    }
+                    Console.WriteLine("Please enter 'Y' for Yes, 'N' for No!");
+                }
+
+                if (retrievedCustomer.rewards.tier == "Gold")
+                {
+                    goldQueue.Enqueue(retrievedCustomer.currentOrder);
+                    Console.WriteLine("Order has been made successfully! Currently queued in gold queue.");
+                }
+                else
+                {
+                    regularQueue.Enqueue(retrievedCustomer.currentOrder);
+                    Console.WriteLine("Order has been made successfully! Currently queued in regular queue.");
+                }
+            } 
+
+            void AddIceCream(Customer customer, int maxScoop)
+            {   
+                List<Flavour> flavourList = new List<Flavour>();
+                List<Topping> toppingList = new List<Topping>();
+
+                int x = 1;
+                foreach (string iceCream in optionsAvailable.Keys)
+                {
+                    Console.WriteLine($"Option {x}: {CapitalizeFirstLetter(iceCream)}");
+                    x++;
+                }
+                Console.Write("Enter your option (name): ");
+                string option = Console.ReadLine().Trim();
+
+                Console.Write($"Enter the number of scoops you want, from 1 - {maxScoop} scoops: ");
+                int scoop = int.Parse(Console.ReadLine());
+
+                // list out the available flavours
+                foreach (KeyValuePair<string,bool> flavour in flavourDict)
+                {   
+                    if (flavour.Value == true)
+                    {
+                        Console.WriteLine($"Premium Flavour: {CapitalizeFirstLetter(flavour.Key)}");
+                        x++;
+                        continue;
+                    }
+                    Console.WriteLine($"Regular Flavour: {CapitalizeFirstLetter(flavour.Key)}");
+                }
+
+                for (int i = 0; i < scoop; i++)
+                {
+                    Console.Write($"Enter the name of the flavour (no repeating): ");
+                    string flavour = Console.ReadLine().Trim().ToLower();
+
+                    // checks if flavour already selected by user
+                    // returns null if its a new flavour, otherwise a reference to it
+                    Flavour flavourToUpdate = flavourList.FirstOrDefault(flavourInList => flavourInList.type == flavour);
+
+                    // +1 to a pre-existing flavour in user selection
+                    if (flavourToUpdate != null)
+                    {
+                        flavourToUpdate.quantity += 1;
+                    }
+                    else if (flavourDict.ContainsKey(flavour)) // new flavour and is an available option
+                    {
+                        Flavour newFlavour = new Flavour(flavour, flavourDict[flavour], 1);
+                        flavourList.Add(newFlavour);
+                        continue;
+                    }
+                   
+                    Console.WriteLine("Flavour chosen does not exist!");
+                    i--;
+                }
+
+                // reassigning value to 1 for the same variable rather than creating new variables to save space
+                x = 1;
+                // list out the available toppings
+                foreach (string topping in toppingDict.Keys)
+                {
+                    Console.WriteLine($"Topping {x}: {topping.ToString()}");
+                    x++;
+                }
+
+                Console.Write($"How many toppings would you like? (0 - {x-1})");
+                int totalToppings = int.Parse(Console.ReadLine());
+
+                for (int i = 0; i < totalToppings; i++)
+                {
+                    Console.Write("Enter the name of the topping (no repeating): ");
+                    string topping = Console.ReadLine().Trim().ToLower();
+
+                    // checks if topping already selected by user
+                    bool toppingAlreadyChosen = toppingList.Any(toppingInList => toppingInList.type == topping);
+
+                    if (toppingAlreadyChosen)
+                    {
+                        Console.WriteLine("Topping already chosen! Choose another one!");
+                        i--;
+                        continue;
+                    }
+                    else if (toppingDict.ContainsKey(topping))
+                    {
+                        Topping newTopping = new Topping(topping);
+                        toppingList.Add(newTopping);
+                        continue;
+                    }
+                   
+                    Console.WriteLine("Topping chosen does not exist!");
+                    i--;
+                }
+
+                // looking for a more efficient way to do this, a similar method done above in OrderCreation() function
+                switch (option)
+                {
+                    case "cup":
+                        IceCream iceCreamCup = new Cup(option, scoop, flavourList, toppingList);
+                        customer.currentOrder.AddIceCream(iceCreamCup);
+                        break;
+                    case "cone":
+                        Console.Write("Would you like to upgrade your ice cream cone to chocolate-dipped cone? (Y/N): ");
+                        string dippedAnswer = Console.ReadLine().Trim().ToUpper();
+
+                        bool dipped;
+                        while(true)
+                        {
+                            if (dippedAnswer == "Y")
+                            {
+                                dipped = true;
+                                break;
+                            }
+                            else if (dippedAnswer == "N")
+                            {
+                                dipped = false;
+                                break;
+                            }
+                            Console.WriteLine("Enter 'Y' for Yes and 'N' for No!");
+                        }
+
+                        IceCream iceCreamCone = new Cone(option, scoop, flavourList, toppingList, dipped);
+                        customer.currentOrder.AddIceCream(iceCreamCone);
+                        break;
+                    case "waffle":
+                        Console.Write("Would you like to add-on a flavour for your waffle? (Y/N): ");
+                        string waffleFlavourAnswer = Console.ReadLine().Trim().ToUpper();
+
+                        while (true)
+                        {
+                            if (waffleFlavourAnswer == "Y")
+                            {
+                                Console.WriteLine("Waffle Flavours available: ");
+                                foreach (KeyValuePair<string,double> flavourAndCost in waffleFlavour)
+                                {
+                                    if (flavourAndCost.Value > 0)
+                                    {
+                                        Console.WriteLine(CapitalizeFirstLetter(flavourAndCost.Key));
+                                    }
+                                }
+
+                                Console.Write("Enter the waffle flavour you want: ");
+                                string selectedWaffleFlavour = Console.ReadLine().Trim().ToLower();
+                                
+                                // might not need original check here, see how later
+                                if (waffleFlavour.ContainsKey(selectedWaffleFlavour) && selectedWaffleFlavour != "original")
+                                {
+                                    IceCream iceCreamWaffle = new Waffle(option, scoop, flavourList, toppingList, selectedWaffleFlavour);
+                                    customer.currentOrder.AddIceCream(iceCreamWaffle);
+                                    break;
+                                }
+                                Console.WriteLine("Enter a valid waffle flavour!");
+                                continue;
+                            }
+                            else if (waffleFlavourAnswer == "N")
+                            {
+                                IceCream iceCreamWaffle = new Waffle(option, scoop, flavourList, toppingList, "original");
+                                customer.currentOrder.AddIceCream(iceCreamWaffle);
+                                break;
+                            }
+                            Console.WriteLine("Enter 'Y' for Yes, 'N' for No!");
+                        }
+                        break;
+                }
+            }
+
+            // Option 5
+            void DisplayCustomerOrderDetails()
+            {
+                int x = 1;
+                foreach (Customer customer in customerDict.Values)
+                {
+                    Console.WriteLine($"[{x}] {customer.ToString()}");
+                    x++;
+                }
+
+                Console.Write("Enter the Member ID of the customer (6 digits): ");
+                int id = int.Parse(Console.ReadLine());
+
+                Customer selectedCustomer = customerDict[id];
+
+                Console.WriteLine($"Current Order: {selectedCustomer.currentOrder.ToString()}");
+
+                Console.WriteLine("Order History: ");
+                foreach (Order pastOrder in selectedCustomer.orderHistory)
+                {
+                    Console.WriteLine(pastOrder.ToString());
+                }
+            }
+
+            // Option 6
+            void ModifyOrderDetails()
+            {
+
+            }
         }
     }
 }

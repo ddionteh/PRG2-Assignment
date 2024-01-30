@@ -60,9 +60,10 @@ namespace ICTreats
                 stringBuilder.Append("\nCurrent Order: None");
             }
 
-            stringBuilder.Append("\nOrder History:\n");
+            stringBuilder.Append("\nOrder History:");
             if (orderHistory.Any())
             {
+                stringBuilder.Append('\n');
                 foreach (Order order in orderHistory)
                 {
                     stringBuilder.AppendLine(order.ToString());

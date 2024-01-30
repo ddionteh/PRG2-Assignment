@@ -66,7 +66,7 @@ namespace ICTreats
                 TotalPrice += 2;
             }
             TotalPrice += toppings.Count; 
-            // Note: there is a shorter way but less readable and may be confusing
+
             return TotalPrice;
         }
 
