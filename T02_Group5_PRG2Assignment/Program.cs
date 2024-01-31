@@ -687,10 +687,16 @@ namespace ICTreats
                         int selectedIceCreamNumber = int.Parse(Console.ReadLine());
 
                         selectedCustomer.currentOrder.ModifyIceCream(selectedIceCreamNumber);
+
+                        Console.WriteLine("--------Updated Order--------");
+                        Console.WriteLine(selectedCustomer.currentOrder.ToString());
                         break;
                     case 2:
                         AddIceCream(selectedCustomer, maxScoops);
                         Console.WriteLine("Ice cream has been added.");
+
+                        Console.WriteLine("--------Updated Order--------");
+                        Console.WriteLine(selectedCustomer.currentOrder.ToString());
                         break;
                     case 3:
                         while (true)
