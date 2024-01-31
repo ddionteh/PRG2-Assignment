@@ -82,7 +82,7 @@ namespace ICTreats
                 Console.WriteLine("========ICE CREAM SHOP MENU========");
                 Console.WriteLine("[1] List all customers \n[2] List all current orders \n[3] Register a new customer " +
                     "\n[4] Create a new customer's order \n[5] Display order details of a customer \n[6] Modify order details " +
-                    "\n[7] Process order and checkoout \n[8] Display monthly charged amounts breakdown & total charged amounts for the year \n[0] Exit program");
+                    "\n[7] Process order and checkout \n[8] Display monthly charged amounts breakdown & total charged amounts for the year \n[0] Exit program");
                 Console.WriteLine("===================================");
                 Console.Write("Enter your option: ");
                 option = int.Parse(Console.ReadLine());
@@ -429,7 +429,7 @@ namespace ICTreats
 
                 Console.WriteLine("Registration successful!");
 
-                customerDict.Add(customer.memberid, customer);
+                customerDict.Add(id, customer);
             }
 
             // Option 4
@@ -783,11 +783,9 @@ namespace ICTreats
                     {
                         // Check in order history
                         Order pastOrder = customer.orderHistory.FirstOrDefault(pastOrders => pastOrders.id == order.id);
-                        Console.WriteLine("successsss");
                         if (pastOrder != null)
                         {
                             foundCustomer = customer;
-                            Console.WriteLine("success");
                             break;
                         }
                     }
@@ -798,8 +796,6 @@ namespace ICTreats
                     Console.WriteLine("Customer has zero orders.");
                     return;
                 }
-
-                Console.WriteLine("Hello");
 
                 // display customer's membership status and points
                 Console.WriteLine($"Membership Status: {foundCustomer.rewards.tier} \nPoints: {foundCustomer.rewards.points}");
@@ -831,8 +827,12 @@ namespace ICTreats
                 // check if customer completed punch card
                 if (foundCustomer.rewards.punchCard == 10)
                 {   
+                    if (customerBirthday == true && order.iceCreamList.Count == 1)
+                    {
+                        Console.WriteLine("Unable to use punch card as free ice cream for birthday is in use.");
+                    }
                     // if it is customer's birthday and most expensive ice cream is the FIRST ice cream
-                    if (customerBirthday == true && mostExpensiveIceCream == 0)
+                    else if (customerBirthday == true && mostExpensiveIceCream == 0)
                     {
                         TotalBill -= order.iceCreamList[1].CalculatePrice();
                     }
@@ -871,6 +871,7 @@ namespace ICTreats
                             break;
                         }
                     }
+                    break;
                 }
 
                 Console.WriteLine("--------------");
@@ -883,9 +884,21 @@ namespace ICTreats
 
                 foundCustomer.rewards.Punch(); // reset to 0 if punchcard is 10, otherwise increase by 1
 
-                foundCustomer.rewards.AddPoints((int)Math.Floor(TotalBill * 0.72));
+                foundCustomer.rewards.AddPoints((int)Math.Floor(TotalBill * 0.72)); // current formula for point addition
 
                 foundCustomer.currentOrder.timeFulfilled = DateTime.Today; 
+
+                // store the costs for the specific month and year
+                string monthYearKey = foundCustomer.currentOrder.timeFulfilled.Value.ToString("MMM yyyy");
+
+                if (monthYearDict.ContainsKey(monthYearKey))
+                {
+                    monthYearDict[monthYearKey] += TotalBill;
+                }
+                else
+                {
+                    monthYearDict.Add(monthYearKey, TotalBill);
+                }
 
                 foundCustomer.currentOrder = null; // clear current order
             }
