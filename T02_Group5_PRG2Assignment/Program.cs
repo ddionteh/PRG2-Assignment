@@ -104,6 +104,10 @@ namespace ICTreats
                     case 6: // Option 6
                         ModifyOrderDetails();
                         break;
+                    case 7:
+                        break;
+                    case 8:
+                        break;
                     default:
                         throw new ArgumentOutOfRangeException(nameof(option), $"Enter a valid option!");
                 }
@@ -185,9 +189,9 @@ namespace ICTreats
                         string[] splitLine = line.Split(',').Select(s => s.Trim().ToLower()).ToArray();
 
                         // checks if the waffle flavour is not inside
-                        if (!waffleFlavour.ContainsKey(splitLine[4]))
+                        if (!waffleFlavour.ContainsKey(splitLine[3]))
                         {   
-                            waffleFlavour.Add(splitLine[4], 3);
+                            waffleFlavour.Add(splitLine[3], 3);
                         }
                     }
                 }
@@ -426,6 +430,8 @@ namespace ICTreats
                 Order order = retrievedCustomer.MakeOrder();
                 order.timeReceived = DateTime.Now.Date;
                 order.id = regularQueue.Count() + goldQueue.Count() + 1;
+
+                bool isCurrentOrder = true;
                 AddIceCream(retrievedCustomer, maxScoops);
 
                 while (true)
@@ -480,7 +486,6 @@ namespace ICTreats
                     if (flavour.Value == true)
                     {
                         Console.WriteLine($"Premium Flavour: {CapitalizeFirstLetter(flavour.Key)}");
-                        x++;
                         continue;
                     }
                     Console.WriteLine($"Regular Flavour: {CapitalizeFirstLetter(flavour.Key)}");
@@ -516,7 +521,7 @@ namespace ICTreats
                 // list out the available toppings
                 foreach (string topping in toppingDict.Keys)
                 {
-                    Console.WriteLine($"Topping {x}: {topping.ToString()}");
+                    Console.WriteLine($"Topping {x}: {topping}");
                     x++;
                 }
 
@@ -554,6 +559,8 @@ namespace ICTreats
                     case "cup":
                         IceCream iceCreamCup = new Cup(option, scoop, flavourList, toppingList);
                         customer.currentOrder.AddIceCream(iceCreamCup);
+                        Console.WriteLine("Successfully added ice cream to order!");
+
                         break;
                     case "cone":
                         Console.Write("Would you like to upgrade your ice cream cone to chocolate-dipped cone? (Y/N): ");
@@ -577,13 +584,14 @@ namespace ICTreats
 
                         IceCream iceCreamCone = new Cone(option, scoop, flavourList, toppingList, dipped);
                         customer.currentOrder.AddIceCream(iceCreamCone);
+                        Console.WriteLine("Successfully added ice cream to order!");
+
                         break;
                     case "waffle":
-                        Console.Write("Would you like to add-on a flavour for your waffle? (Y/N): ");
-                        string waffleFlavourAnswer = Console.ReadLine().Trim().ToUpper();
-
                         while (true)
                         {
+                            Console.Write("Would you like to add-on a flavour for your waffle? (Y/N): ");
+                            string waffleFlavourAnswer = Console.ReadLine().Trim().ToUpper();
                             if (waffleFlavourAnswer == "Y")
                             {
                                 Console.WriteLine("Waffle Flavours available: ");
@@ -603,6 +611,7 @@ namespace ICTreats
                                 {
                                     IceCream iceCreamWaffle = new Waffle(option, scoop, flavourList, toppingList, selectedWaffleFlavour);
                                     customer.currentOrder.AddIceCream(iceCreamWaffle);
+                                    Console.WriteLine("Successfully added ice cream to order!");
                                     break;
                                 }
                                 Console.WriteLine("Enter a valid waffle flavour!");
@@ -612,6 +621,7 @@ namespace ICTreats
                             {
                                 IceCream iceCreamWaffle = new Waffle(option, scoop, flavourList, toppingList, "original");
                                 customer.currentOrder.AddIceCream(iceCreamWaffle);
+                                Console.WriteLine("Successfully added ice cream to order!");
                                 break;
                             }
                             Console.WriteLine("Enter 'Y' for Yes, 'N' for No!");
@@ -658,7 +668,7 @@ namespace ICTreats
                 int iceCreamNumber = 1;
                 foreach (IceCream iceCream in selectedCustomer.currentOrder.iceCreamList)
                 {
-                    Console.WriteLine($"Ice Cream {iceCreamNumber}: {iceCream.ToString()}");
+                    Console.WriteLine($"Ice Cream [{iceCreamNumber}]: {iceCream.ToString()}");
                     iceCreamNumber++;
                 }
 
@@ -676,10 +686,11 @@ namespace ICTreats
                         Console.Write("Select the numerical value of the ice cream to modify: ");
                         int selectedIceCreamNumber = int.Parse(Console.ReadLine());
 
-                        selectedCustomer.currentOrder.ModifyIceCream(selectedIceCreamNumber - 1); // still broken, fix it later
+                        selectedCustomer.currentOrder.ModifyIceCream(selectedIceCreamNumber);
                         break;
                     case 2:
-                        AddIceCream(selectedCustomer, maxScoops); // i think this shld work, idk bro its 3 am
+                        AddIceCream(selectedCustomer, maxScoops);
+                        Console.WriteLine("Ice cream has been added.");
                         break;
                     case 3:
                         while (true)
