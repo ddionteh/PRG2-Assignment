@@ -36,9 +36,15 @@ namespace ICTreats
 
         public void AddPoints(int Points)
         {
-            points += (int)Math.Floor(Points * 0.72);
+            points += Points;
 
-            if (points >= 100) 
+            // this makes it such that membership status will never be demoted
+            // (lowest set here is "Silver", but if status is "Gold" it will return before)
+            if (tier == "Gold")
+            {
+                return;
+            }
+            else if (points >= 100) // if tier is silver or ordinary
             {
                 tier = "Gold";
             }
@@ -50,7 +56,7 @@ namespace ICTreats
 
         public void RedeemPoints(int points)
         {
-            this.points -= points; 
+            this.points -= points;
         }
 
         public void Punch()

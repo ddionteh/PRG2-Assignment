@@ -36,7 +36,6 @@ namespace ICTreats
             Order order = new Order(); 
             currentOrder = order;
             orderHistory.Add(order);
-
             return order; // reference-type
         }
 

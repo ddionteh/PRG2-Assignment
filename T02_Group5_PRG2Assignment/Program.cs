@@ -77,7 +77,8 @@ namespace ICTreats
             {
                 Console.WriteLine("========ICE CREAM SHOP MENU========");
                 Console.WriteLine("[1] List all customers \n[2] List all current orders \n[3] Register a new customer " +
-                    "\n[4] Create a new customer's order \n[5] Display order details of a customer \n[6] Modify order details \n[0] Exit program");
+                    "\n[4] Create a new customer's order \n[5] Display order details of a customer \n[6] Modify order details " +
+                    "\n[7] Process order and checkoout \n[8] Display monthly charged amounts breakdown & total charged amounts for the year \n[0] Exit program");
                 Console.WriteLine("===================================");
                 Console.Write("Enter your option: ");
                 option = int.Parse(Console.ReadLine());
@@ -104,7 +105,8 @@ namespace ICTreats
                     case 6: // Option 6
                         ModifyOrderDetails();
                         break;
-                    case 7:
+                    case 7: // Option 7
+                        Checkout();
                         break;
                     case 8:
                         break;
@@ -428,7 +430,7 @@ namespace ICTreats
 
                 Customer retrievedCustomer = customerDict[id];
                 Order order = retrievedCustomer.MakeOrder();
-                order.timeReceived = DateTime.Now.Date;
+                order.timeReceived = DateTime.Now;
                 order.id = regularQueue.Count() + goldQueue.Count() + 1;
 
                 bool isCurrentOrder = true;
@@ -665,13 +667,7 @@ namespace ICTreats
                     return;
                 }
 
-                int iceCreamNumber = 1;
-                foreach (IceCream iceCream in selectedCustomer.currentOrder.iceCreamList)
-                {
-                    Console.WriteLine($"Ice Cream [{iceCreamNumber}]: {iceCream.ToString()}");
-                    iceCreamNumber++;
-                }
-
+                ListIceCream(selectedCustomer.currentOrder);
 
                 Console.WriteLine("[1] Modify an existing ice cream \n[2] Add new ice cream to order \n[3] Delete existing ice cream from order \n[0] Exit to main menu");
 
@@ -721,6 +717,136 @@ namespace ICTreats
                         Console.WriteLine(selectedCustomer.currentOrder.ToString());
                         break;
                 }
+            }
+
+            void ListIceCream(Order order)
+            {
+                int iceCreamNumber = 1;
+                foreach (IceCream iceCream in order.iceCreamList)
+                {
+                    Console.WriteLine($"Ice Cream [{iceCreamNumber}]: {iceCream.ToString()}");
+                    iceCreamNumber++;
+                }
+            }
+            // Option 7 : Process an order and checkout
+            void Checkout()
+            {   
+                // dequeue gold queue first
+                Order order;
+                if (goldQueue.Count > 0)
+                {
+                    order = goldQueue.Dequeue();
+                }
+                else if (regularQueue.Count > 0)
+                {
+                    order = regularQueue.Dequeue();
+                }
+                else
+                {
+                    Console.WriteLine("No order to checkout!");
+                    return;
+                }
+
+                ListIceCream(order);
+
+                // calculate total bill
+                double TotalBill = order.CalculateTotal();
+
+                // display total bill
+                Console.WriteLine("--------------------------");
+                Console.WriteLine($"Total Bill: ${TotalBill:F2}");
+
+
+                KeyValuePair<int,Customer> foundCustomer = customerDict.FirstOrDefault(customerDict => customerDict.Value.currentOrder.id == order.id);
+                Customer customer = foundCustomer.Value;
+
+                // display customer's membership status and points
+                Console.WriteLine($"Membership Status: {customer.rewards.tier} \nPoints: {customer.rewards.points}");
+
+
+                // find the most expensive ice cream
+                int mostExpensiveIceCream = 0; // first ice cream in list
+                double mostExpensiveIceCreamCost = 0.0;
+
+                for (int i = 0; i < order.iceCreamList.Count; i++)
+                {
+                    if (order.iceCreamList[i].CalculatePrice() > mostExpensiveIceCreamCost)
+                    {
+                        mostExpensiveIceCreamCost = order.iceCreamList[i].CalculatePrice();
+                        mostExpensiveIceCream = i;
+                    }
+                }
+
+                // check if it is the customer's birthday
+                bool customerBirthday = false;
+                if (customer.IsBirthday() == true)
+                {
+                    Console.WriteLine("Happy birthday!");
+                    customerBirthday = true;
+                    TotalBill -= mostExpensiveIceCreamCost;
+                }
+
+                
+                // check if customer completed punch card
+                if (customer.rewards.punchCard == 10)
+                {   
+                    // if it is customer's birthday and most expensive ice cream is the FIRST ice cream
+                    if (customerBirthday == true && mostExpensiveIceCream == 0)
+                    {
+                        TotalBill -= order.iceCreamList[1].CalculatePrice();
+                    }
+                    else
+                    {
+                        TotalBill -= order.iceCreamList[0].CalculatePrice();
+                    }
+                }
+
+                // check if can redeem points
+                while (true)
+                {
+                    if (customer.rewards.tier != "Ordinary" && customer.rewards.points > 0)
+                    {
+                        Console.Write("You can redeem points, do you want to? (Y/N): ");
+                        string redeemAnswer = Console.ReadLine().Trim().ToUpper();
+
+                        if (redeemAnswer == "Y")
+                        {
+                            Console.Write($"You have {customer.rewards.points} points, how many do you want to redeem? ($0.02 = 1 point): ");
+                            int redeemPoints = int.Parse(Console.ReadLine());
+
+                            if (redeemPoints >= 0 && redeemPoints <= customer.rewards.points)
+                            {
+                                TotalBill -= redeemPoints * 0.02;
+                                customer.rewards.RedeemPoints(redeemPoints);
+                            }
+                            else
+                            {
+                                Console.WriteLine("Unable to redeem more than the total points and value should be positive integer.");
+                                continue;
+                            }
+                        }
+                        else
+                        {
+                            break;
+                        }
+                    }
+                }
+
+                Console.WriteLine("--------------");
+                Console.WriteLine($"Final Bill: {TotalBill:F2}");
+
+                Console.Write("Enter any key to make payment: ");
+                Console.ReadLine();
+
+                customer.rewards.Punch();
+
+                customer.rewards.AddPoints((int)Math.Floor(TotalBill * 0.72));
+
+                customer.currentOrder.timeFulfilled = DateTime.Now.Date; // need check this later
+
+                customer.currentOrder = null; // clear current order
+
+
 
             }
         }
