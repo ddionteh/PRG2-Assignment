@@ -7,6 +7,7 @@
 using ICTreats;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Diagnostics.SymbolStore;
 using System.Globalization;
 using System.Linq;
@@ -50,6 +51,9 @@ namespace ICTreats
         {
             Queue<Order> regularQueue = new Queue<Order>();
             Queue<Order> goldQueue = new Queue<Order>();
+            Dictionary<int,Order> orderDict = new Dictionary<int,Order>();
+            Dictionary<string, double> monthYearDict = new Dictionary<string, double>();
+
             int maxScoops = 3;
 
             // Getting data into the program first
@@ -109,6 +113,7 @@ namespace ICTreats
                         Checkout();
                         break;
                     case 8:
+                        DisplayMonthYearBreakdown();
                         break;
                     default:
                         throw new ArgumentOutOfRangeException(nameof(option), $"Enter a valid option!");
@@ -127,7 +132,7 @@ namespace ICTreats
                     {
                         // Split into elements and remove all leading or trailing whitespace
                         string[] splitLine = line.Split(',').Select(s => s.Trim().ToLower()).ToArray();
-                        Customer customer = new Customer(splitLine[0], int.Parse(splitLine[1]), DateTime.ParseExact(splitLine[2], "dd/MM/yyyy", CultureInfo.InvariantCulture));
+                        Customer customer = new Customer(splitLine[0], int.Parse(splitLine[1]), DateTime.ParseExact(splitLine[2], "d/M/yyyy", CultureInfo.InvariantCulture));
                         customer.rewards = new PointCard(int.Parse(splitLine[4]), int.Parse(splitLine[5]));
                         customerDict.Add(customer.memberid, customer);
                     }
@@ -216,7 +221,8 @@ namespace ICTreats
 
                         bool newOrder = true;
                         Order order;
-                        if (customer.currentOrder != null && customer.currentOrder.timeReceived == Convert.ToDateTime(splitLine[2]))
+
+                        if (customer.currentOrder != null && customer.currentOrder.timeReceived == DateTime.ParseExact(splitLine[2], "dd/MM/yyyy HH:mm", CultureInfo.InvariantCulture))
                         {
                             order = customer.currentOrder;
                             newOrder = false;
@@ -227,12 +233,17 @@ namespace ICTreats
                             order = customer.MakeOrder();
                             // updating order details (ID and Time Received)
                             order.id = int.Parse(splitLine[0]);
-                            order.timeReceived = Convert.ToDateTime(splitLine[2]);
+                            order.timeReceived = DateTime.ParseExact(splitLine[2], "dd/MM/yyyy HH:mm", CultureInfo.InvariantCulture);
+                        }
+
+                        if (orderDict.TryGetValue(order.id, out Order value) == null) 
+                        {
+                            orderDict.Add(order.id, order);
                         }
 
                         if (!String.IsNullOrWhiteSpace(splitLine[3]))
                         {
-                            order.timeFulfilled = Convert.ToDateTime(splitLine[3]);
+                            order.timeFulfilled = DateTime.ParseExact(splitLine[3], "dd/MM/yyyy HH:mm", CultureInfo.InvariantCulture);
                         }
 
                         List<Flavour> flavours = new List<Flavour>();
@@ -297,19 +308,6 @@ namespace ICTreats
                         // checking if the option exists
                         if (optionsAvailable.ContainsKey(splitLine[4]))
                         {
-                            // Queue for gold member queue
-                            if (customer.rewards.tier == "Gold")
-                            {
-                                if (newOrder == true)
-                                {
-                                    goldQueue.Enqueue(order);
-                                }
-                            }
-                            else if (newOrder == true)
-                            {
-                                regularQueue.Enqueue(order);
-                            }
-
                             switch (splitLine[4])
                             {
                                 case "cup":
@@ -320,7 +318,7 @@ namespace ICTreats
                                 case "cone":
                                     IceCream iceCreamCone = new Cone(splitLine[4], int.Parse(splitLine[5]), flavours, toppings, bool.Parse(splitLine[6]));
                                     order.AddIceCream(iceCreamCone);
-
+   
                                     continue;
                                 case "waffle":
                                     IceCream iceCreamWaffle = new Waffle(splitLine[4], int.Parse(splitLine[5]), flavours, toppings, splitLine[7]);
@@ -335,6 +333,20 @@ namespace ICTreats
                         else
                         {
                             Console.WriteLine("Error, no such option available");
+                        }
+
+                        string monthYearKey = order.timeReceived.ToString("MMM yyyy");
+
+                        // Check if the monthYearKey already exists in the dictionary
+                        if (monthYearDict.ContainsKey(monthYearKey))
+                        {
+                            // If order is in dict, add the total cost of order
+                            monthYearDict[monthYearKey] += order.CalculateTotal();
+                        }
+                        else
+                        {
+                            // If key does not exist, add a new entry with the key and price
+                            monthYearDict.Add(monthYearKey, order.CalculateTotal());
                         }
                     }
                 }
@@ -403,8 +415,8 @@ namespace ICTreats
                     return;
                 }
 
-                Console.Write("Enter your date of birth (in dd/mm/YYYY format): ");
-                DateTime dob = DateTime.Parse(Console.ReadLine()).Date;
+                Console.Write("Enter your date of birth (in dd/MM/yyyy format): ");
+                DateTime dob = DateTime.ParseExact(Console.ReadLine(),"d/M/yyyy", CultureInfo.InvariantCulture);
 
                 Customer customer = new Customer(name, id, dob);
                 PointCard pointCard = new PointCard(0, 0);
@@ -430,10 +442,10 @@ namespace ICTreats
 
                 Customer retrievedCustomer = customerDict[id];
                 Order order = retrievedCustomer.MakeOrder();
-                order.timeReceived = DateTime.Now;
-                order.id = regularQueue.Count() + goldQueue.Count() + 1;
 
-                bool isCurrentOrder = true;
+                order.timeReceived = DateTime.Today;
+                order.id = orderDict.Values.Count() + 1 ;
+
                 AddIceCream(retrievedCustomer, maxScoops);
 
                 while (true)
@@ -640,6 +652,7 @@ namespace ICTreats
                 Console.Write("Enter the Member ID of the customer (6 digits): ");
                 int id = int.Parse(Console.ReadLine());
 
+                Console.WriteLine(id);
                 Customer selectedCustomer = customerDict[id];
 
                 Console.WriteLine($"Current Order: {selectedCustomer.currentOrder.ToString()}");
@@ -676,7 +689,7 @@ namespace ICTreats
 
                 switch (option)
                 {
-                    case 0:
+                    case 0: // exit 
                         break;
                     case 1:
                         Console.Write("Select the numerical value of the ice cream to modify: ");
@@ -756,12 +769,40 @@ namespace ICTreats
                 Console.WriteLine("--------------------------");
                 Console.WriteLine($"Total Bill: ${TotalBill:F2}");
 
+                Customer foundCustomer = null;
 
-                KeyValuePair<int,Customer> foundCustomer = customerDict.FirstOrDefault(customerDict => customerDict.Value.currentOrder.id == order.id);
-                Customer customer = foundCustomer.Value;
+                foreach (var kvp in customerDict)
+                {
+                    Customer customer = kvp.Value;
+                    if (customer.currentOrder != null && customer.currentOrder.id == order.id)
+                    {
+                        foundCustomer = customer;
+                        break;
+                    }
+                    else if (customer.currentOrder == null)
+                    {
+                        // Check in order history
+                        Order pastOrder = customer.orderHistory.FirstOrDefault(pastOrders => pastOrders.id == order.id);
+                        Console.WriteLine("successsss");
+                        if (pastOrder != null)
+                        {
+                            foundCustomer = customer;
+                            Console.WriteLine("success");
+                            break;
+                        }
+                    }
+                }
+
+                if (foundCustomer == null)
+                {
+                    Console.WriteLine("Customer has zero orders.");
+                    return;
+                }
+
+                Console.WriteLine("Hello");
 
                 // display customer's membership status and points
-                Console.WriteLine($"Membership Status: {customer.rewards.tier} \nPoints: {customer.rewards.points}");
+                Console.WriteLine($"Membership Status: {foundCustomer.rewards.tier} \nPoints: {foundCustomer.rewards.points}");
 
 
                 // find the most expensive ice cream
@@ -779,7 +820,7 @@ namespace ICTreats
 
                 // check if it is the customer's birthday
                 bool customerBirthday = false;
-                if (customer.IsBirthday() == true)
+                if (foundCustomer.IsBirthday() == true)
                 {
                     Console.WriteLine("Happy birthday!");
                     customerBirthday = true;
@@ -788,7 +829,7 @@ namespace ICTreats
 
                 
                 // check if customer completed punch card
-                if (customer.rewards.punchCard == 10)
+                if (foundCustomer.rewards.punchCard == 10)
                 {   
                     // if it is customer's birthday and most expensive ice cream is the FIRST ice cream
                     if (customerBirthday == true && mostExpensiveIceCream == 0)
@@ -804,20 +845,20 @@ namespace ICTreats
                 // check if can redeem points
                 while (true)
                 {
-                    if (customer.rewards.tier != "Ordinary" && customer.rewards.points > 0)
+                    if (foundCustomer.rewards.tier != "Ordinary" && foundCustomer.rewards.points > 0)
                     {
                         Console.Write("You can redeem points, do you want to? (Y/N): ");
                         string redeemAnswer = Console.ReadLine().Trim().ToUpper();
 
                         if (redeemAnswer == "Y")
                         {
-                            Console.Write($"You have {customer.rewards.points} points, how many do you want to redeem? ($0.02 = 1 point): ");
+                            Console.Write($"You have {foundCustomer.rewards.points} points, how many do you want to redeem? ($0.02 = 1 point): ");
                             int redeemPoints = int.Parse(Console.ReadLine());
 
-                            if (redeemPoints >= 0 && redeemPoints <= customer.rewards.points)
+                            if (redeemPoints >= 0 && redeemPoints <= foundCustomer.rewards.points)
                             {
                                 TotalBill -= redeemPoints * 0.02;
-                                customer.rewards.RedeemPoints(redeemPoints);
+                                foundCustomer.rewards.RedeemPoints(redeemPoints);
                             }
                             else
                             {
@@ -838,16 +879,62 @@ namespace ICTreats
                 Console.Write("Enter any key to make payment: ");
                 Console.ReadLine();
 
-                customer.rewards.Punch();
+                Console.WriteLine("Payment successful!");
 
-                customer.rewards.AddPoints((int)Math.Floor(TotalBill * 0.72));
+                foundCustomer.rewards.Punch(); // reset to 0 if punchcard is 10, otherwise increase by 1
 
-                customer.currentOrder.timeFulfilled = DateTime.Now.Date; // need check this later
+                foundCustomer.rewards.AddPoints((int)Math.Floor(TotalBill * 0.72));
 
-                customer.currentOrder = null; // clear current order
+                foundCustomer.currentOrder.timeFulfilled = DateTime.Today; 
+
+                foundCustomer.currentOrder = null; // clear current order
+            }
 
 
+            void DisplayMonthYearBreakdown()
+            {
+                Console.Write("Enter the year: ");
+                int year;
+                while (true)
+                {
+                    if (int.TryParse(Console.ReadLine(), out year))
+                    {
+                        // can be changed, up to system
+                        if (year >= 1950 && year <= 2050) { break; }
+                        else
+                        {
+                            Console.Write("Invalid input. Please enter a valid year: ");
+                        }
 
+                    }
+                    else
+                    {
+                        Console.Write("Invalid input. Please enter a valid year: ");
+                    }
+                }
+                double yearlyTotal = 0.00;
+                Console.WriteLine();
+                // Iterate over each month of the year
+                for (int month = 1; month <= 12; month++)
+                {
+                    // Create a key for the month and year
+                    string monthYearKey = new DateTime(year, month, 1).ToString("MMM yyyy");
+
+                    // Check if dict has the month and year already
+                    if (monthYearDict.TryGetValue(monthYearKey, out double TotalMonthly))
+                    {
+                        Console.WriteLine($"{monthYearKey}: ${TotalMonthly:0.00}");
+                        yearlyTotal += TotalMonthly;
+                    }
+                    else
+                    {
+                        // If the month does not have data, I print it as $0.00 
+                        Console.WriteLine($"{monthYearKey}: $0.00");
+                    }
+                }
+
+                // Print the total for the year
+                Console.WriteLine($"\nTotal for {year}: ${yearlyTotal:0.00}\n");
             }
         }
     }
