@@ -655,8 +655,19 @@ namespace ICTreats
                 Console.WriteLine(id);
                 Customer selectedCustomer = customerDict[id];
 
+                if (selectedCustomer.currentOrder == null)
+                {
+                    Console.WriteLine("Current order is empty!");
+                    return;
+                }
+
                 Console.WriteLine($"Current Order: {selectedCustomer.currentOrder.ToString()}");
 
+                if (selectedCustomer.orderHistory == null)
+                {
+                    Console.WriteLine("Order history is empty!");
+                    return;
+                }
                 Console.WriteLine("Order History: ");
                 foreach (Order pastOrder in selectedCustomer.orderHistory)
                 {
