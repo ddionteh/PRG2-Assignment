@@ -25,38 +25,23 @@ namespace ICTreats
                     break;
                 case 1: // single scoop
                     TotalPrice += 4.00;
-
-                    for (int i = 0; i < scoops; i++)
-                    {
-                        if (flavours[i].premium == true )
-                        {
-                            TotalPrice += 2.00;
-                        }
-                    }
                     break;
                 case 2: // double scoops
                     TotalPrice += 5.50;
-
-                    for (int i = 0; i < scoops; i++)
-                    {
-                        if (flavours[i].premium == true)
-                        {
-                            TotalPrice += 2.00;
-                        }
-                    }
                     break;
                 case 3: // tripe scooops
                     TotalPrice += 6.50;
-
-                    for (int i = 0; i < scoops; i++)
-                    {
-                        if (flavours[i].premium == true)
-                        {
-                            TotalPrice += 2.00;
-                        }
-                    }
                     break;
             }
+
+            for (int i = 0; i < flavours.Count; i++)
+            {
+                if (flavours[i].premium == true)
+                {
+                    TotalPrice += 2.00 * flavours[i].quantity;
+                }
+            }
+
             TotalPrice += toppings.Count;
             return TotalPrice;
         }
