@@ -131,7 +131,8 @@ namespace ICTreats
                     {
                         // Split into elements and remove all leading or trailing whitespace
                         string[] splitLine = line.Split(',').Select(s => s.Trim().ToLower()).ToArray();
-                        Customer customer = new Customer(splitLine[0], int.Parse(splitLine[1]), DateTime.ParseExact(splitLine[2], "dd/MM/yyyy" ,null));
+                        DateTime dob = DateTime.ParseExact(splitLine[2], "d/M/yyyy", CultureInfo.InvariantCulture);
+                        Customer customer = new Customer(splitLine[0], int.Parse(splitLine[1]), dob);
                         customer.rewards = new PointCard(int.Parse(splitLine[4]), int.Parse(splitLine[5]));
                         customerDict.Add(customer.memberid, customer);
                     }
@@ -447,24 +448,25 @@ namespace ICTreats
                 }
 
 
-                DateTime dob;
+                DateTime dob; // placeholder
+                string format = "d/M/yyyy";
 
                 while (true)
                 {
                     try
                     {
-                        Console.Write("Enter Customer Date Of Birth (dd/MM/yyyy): ");
-                        dob = DateTime.ParseExact(Console.ReadLine(), "d/M/yyyy", null);
+                        Console.Write("Enter your date of birth in d/M/yyyy format: ");
+                        string dateOfBirth = Console.ReadLine().Trim();
+                        dob = DateTime.ParseExact(dateOfBirth, "d/M/yyyy", CultureInfo.InvariantCulture);
+                        Console.WriteLine($"Parsed Date: {dob.ToShortDateString()}");
                         break;
                     }
                     catch (FormatException)
                     {
-                        // Input is not in the correct format
-                        Console.WriteLine("Invalid date format. Please enter the date in dd/MM/yyyy format. \n");
+                        Console.WriteLine("Invalid date format. Please enter the date in the format d/M/yyyy.");
                     }
-                    catch (Exception ex)
-                    {
-                        Console.WriteLine($"An error occurred: {ex.Message}\n");
+                    catch (Exception ex) {
+                        Console.WriteLine("Error: " + ex.Message);
                     }
                 }
 
@@ -946,8 +948,19 @@ namespace ICTreats
 
                             if (redeemAnswer == "Y")
                             {
+                                int redeemPoints = 0;
                                 Console.Write($"You have {customer.rewards.points} points, how many do you want to redeem? ($0.02 = 1 point): ");
-                                int redeemPoints = int.Parse(Console.ReadLine());
+                                
+                                // check if user input is an integer
+                                try
+                                {
+                                    redeemPoints = int.Parse(Console.ReadLine());
+                                }
+                                catch(FormatException) 
+                                {
+                                    Console.WriteLine("Please enter an integer!");
+                                    continue;
+                                }
 
                                 // ensure enough positive points and not more than total amount to pay left
                                 if (redeemPoints >= 0 && redeemPoints <= customer.rewards.points && (redeemPoints * 0.02 <= TotalBill))
@@ -1060,7 +1073,7 @@ namespace ICTreats
                         }
                         Console.WriteLine($"Please enter a valid integer from {lowerLimit} to {upperLimit}");
                     }
-                    catch (FormatException ex)
+                    catch (FormatException)
                     {
                         Console.WriteLine($"Please enter a valid integer from {lowerLimit} to {upperLimit}");
                     }
