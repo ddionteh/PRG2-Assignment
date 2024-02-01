@@ -219,13 +219,12 @@ namespace ICTreats
                         // Reference to the customer who made the order
                         Customer customer = customerDict[int.Parse(splitLine[1])];
 
-                        bool newOrder = true;
                         Order order;
 
+                        // if order is not new
                         if (customer.currentOrder != null && customer.currentOrder.timeReceived == DateTime.ParseExact(splitLine[2], "dd/MM/yyyy HH:mm", CultureInfo.InvariantCulture))
                         {
                             order = customer.currentOrder;
-                            newOrder = false;
                         }
                         else // new order
                         {
@@ -233,15 +232,14 @@ namespace ICTreats
                             order = customer.MakeOrder();
                             // updating order details (ID and Time Received)
                             order.id = int.Parse(splitLine[0]);
+
+                            // add order into dictionary of all orders
+                            orderDict.Add(order.id, order);
                             order.timeReceived = DateTime.ParseExact(splitLine[2], "dd/MM/yyyy HH:mm", CultureInfo.InvariantCulture);
                         }
 
-                        if (orderDict.TryGetValue(order.id, out Order value) == null) 
-                        {
-                            orderDict.Add(order.id, order);
-                        }
-
-                        if (!String.IsNullOrWhiteSpace(splitLine[3]))
+                        // if order already checked out
+                        if (!string.IsNullOrWhiteSpace(splitLine[3]))
                         {
                             order.timeFulfilled = DateTime.ParseExact(splitLine[3], "dd/MM/yyyy HH:mm", CultureInfo.InvariantCulture);
                         }
@@ -274,7 +272,7 @@ namespace ICTreats
                                     flavours.Add(new Flavour(splitLine[i], premium, 1));
                                 }
                             }
-                            else if (String.IsNullOrEmpty(splitLine[i]))
+                            else if (string.IsNullOrEmpty(splitLine[i]))
                             {
                                 continue;
                             }
@@ -294,41 +292,35 @@ namespace ICTreats
                             {
                                 toppings.Add(new Topping(splitLine[i]));
                             }
-                            else if (String.IsNullOrEmpty(splitLine[i]))
+                            else if (string.IsNullOrEmpty(splitLine[i]))
                             {
                                 continue;
                             }
-                            else
-                            {
-                                Console.WriteLine("Error, no such topping available.");
-                                continue;
-                            }
+                            // if topping is not a valid option
+                            Console.WriteLine("Error, no such topping available.");
+                            continue;
                         }
 
                         // checking if the option exists
                         if (optionsAvailable.ContainsKey(splitLine[4]))
                         {
+                            IceCream iceCream;
                             switch (splitLine[4])
                             {
                                 case "cup":
-                                    IceCream iceCreamCup = new Cup(splitLine[4], int.Parse(splitLine[5]), flavours, toppings);
-                                    order.AddIceCream(iceCreamCup);
-
-                                    continue;
+                                    iceCream = new Cup(splitLine[4], int.Parse(splitLine[5]), flavours, toppings);
+                                    break;
                                 case "cone":
-                                    IceCream iceCreamCone = new Cone(splitLine[4], int.Parse(splitLine[5]), flavours, toppings, bool.Parse(splitLine[6]));
-                                    order.AddIceCream(iceCreamCone);
-   
-                                    continue;
+                                    iceCream = new Cone(splitLine[4], int.Parse(splitLine[5]), flavours, toppings, bool.Parse(splitLine[6]));
+                                    break;
                                 case "waffle":
-                                    IceCream iceCreamWaffle = new Waffle(splitLine[4], int.Parse(splitLine[5]), flavours, toppings, splitLine[7]);
-                                    order.AddIceCream(iceCreamWaffle);
-
-                                    continue;
+                                    iceCream = new Waffle(splitLine[4], int.Parse(splitLine[5]), flavours, toppings, splitLine[7]);
+                                    break;
                                 default:
                                     Console.WriteLine("Error, no such option available");
                                     continue;
                             }
+                            order.AddIceCream(iceCream);
                         }
                         else
                         {
@@ -465,16 +457,19 @@ namespace ICTreats
                     Console.WriteLine("Please enter 'Y' for Yes, 'N' for No!");
                 }
 
+                // add it to dictionary
+                orderDict.Add(retrievedCustomer.currentOrder.id,retrievedCustomer.currentOrder);
+
+                // checks if customer is Gold member
                 if (retrievedCustomer.rewards.tier == "Gold")
                 {
                     goldQueue.Enqueue(retrievedCustomer.currentOrder);
                     Console.WriteLine("Order has been made successfully! Currently queued in gold queue.");
+                    return;
                 }
-                else
-                {
-                    regularQueue.Enqueue(retrievedCustomer.currentOrder);
-                    Console.WriteLine("Order has been made successfully! Currently queued in regular queue.");
-                }
+                // otherwise, regular customer
+                regularQueue.Enqueue(retrievedCustomer.currentOrder);
+                Console.WriteLine("Order has been made successfully! Currently queued in regular queue.");
             } 
 
             void AddIceCream(Customer customer, int maxScoop)

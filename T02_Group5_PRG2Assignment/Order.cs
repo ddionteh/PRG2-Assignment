@@ -161,7 +161,7 @@ namespace ICTreats
             // modify the current flavours
             void ModifyFlavours()
             {
-                // no need to check if flavour is 0, minimally one here
+                // no need to check if flavour is 0, minimally one to create an order anyway
 
                 // list out the available flavours
                 foreach (KeyValuePair<string, bool> flavour in Program.flavourDict)
@@ -174,34 +174,39 @@ namespace ICTreats
                     Console.WriteLine($"Regular Flavour: {Program.CapitalizeFirstLetter(flavour.Key)}");
                 }
 
+                // change each flavour for the number of flavours available 
                 for (int i = 0; i < modifyIceCream.flavours.Count; i++)
                 {
                     Console.Write($"Enter new flavour for flavour {i+1}: ");
 
                     string newFlavour = Console.ReadLine().Trim().ToLower();
 
-                    bool premium;
+                    // check if flavour is a valid option
                     if (Program.flavourDict.ContainsKey(newFlavour))
-                    {   
-                        // if flavour is premium
-                        if (Program.flavourDict[newFlavour] == true)
+                    {
+                        // if user has selected a repeated flavour
+                        Flavour existingFlavour = modifyIceCream.flavours.FirstOrDefault(flavourInList => flavourInList.type == newFlavour);
+
+                        // If the flavour is not new, increment its quantity
+                        if (existingFlavour != null)
                         {
-                            premium = true;
-                            modifyIceCream.flavours[i] = new Flavour(newFlavour, premium, 1);
+                            existingFlavour.quantity += 1;
+                            continue;
+                        }
+                        // if new flavour is premium
+                        else if (Program.flavourDict[newFlavour] == true)
+                        {
+                            modifyIceCream.flavours[i] = new Flavour(newFlavour, true, 1);
                             continue;
                         }
 
-                        // if flavour is regular
-                        premium = false;
-                        modifyIceCream.flavours[i] = new Flavour(newFlavour, premium, 1);
+                        // if new flavour is regular
+                        modifyIceCream.flavours[i] = new Flavour(newFlavour, false, 1);
                         continue;
                     }
-                    else
-                    {
-                        Console.WriteLine("Flavour is does not exist!");
-                        i--;
-                        continue;
-                    }
+                    Console.WriteLine("Flavour does not exist!");
+                    i--;
+                    continue;
                 }
             }
 

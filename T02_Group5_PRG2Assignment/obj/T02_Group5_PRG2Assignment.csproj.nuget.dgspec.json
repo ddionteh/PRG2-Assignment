@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\diont\\Downloads\\PRG2-Assignment\\T02_Group5_PRG2Assignment\\T02_Group5_PRG2Assignment.csproj": {}
+    "C:\\Users\\diont\\Downloads\\T02_Group5_PRG2Assignment\\PRG2-Assignment\\T02_Group5_PRG2Assignment\\T02_Group5_PRG2Assignment.csproj": {}
   },
   "projects": {
-    "C:\\Users\\diont\\Downloads\\PRG2-Assignment\\T02_Group5_PRG2Assignment\\T02_Group5_PRG2Assignment.csproj": {
+    "C:\\Users\\diont\\Downloads\\T02_Group5_PRG2Assignment\\PRG2-Assignment\\T02_Group5_PRG2Assignment\\T02_Group5_PRG2Assignment.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\diont\\Downloads\\PRG2-Assignment\\T02_Group5_PRG2Assignment\\T02_Group5_PRG2Assignment.csproj",
+        "projectUniqueName": "C:\\Users\\diont\\Downloads\\T02_Group5_PRG2Assignment\\PRG2-Assignment\\T02_Group5_PRG2Assignment\\T02_Group5_PRG2Assignment.csproj",
         "projectName": "T02_Group5_PRG2Assignment",
-        "projectPath": "C:\\Users\\diont\\Downloads\\PRG2-Assignment\\T02_Group5_PRG2Assignment\\T02_Group5_PRG2Assignment.csproj",
+        "projectPath": "C:\\Users\\diont\\Downloads\\T02_Group5_PRG2Assignment\\PRG2-Assignment\\T02_Group5_PRG2Assignment\\T02_Group5_PRG2Assignment.csproj",
         "packagesPath": "C:\\Users\\diont\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\diont\\Downloads\\PRG2-Assignment\\T02_Group5_PRG2Assignment\\obj\\",
+        "outputPath": "C:\\Users\\diont\\Downloads\\T02_Group5_PRG2Assignment\\PRG2-Assignment\\T02_Group5_PRG2Assignment\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
           "C:\\Users\\diont\\AppData\\Roaming\\NuGet\\NuGet.Config",
