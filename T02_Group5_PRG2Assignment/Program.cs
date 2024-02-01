@@ -445,10 +445,28 @@ namespace ICTreats
                         Console.WriteLine(ex.Message);
                     }
                 }
-                   
 
-                Console.Write("Enter your date of birth (in dd/MM/yyyy format): ");
-                DateTime dob = DateTime.ParseExact(Console.ReadLine(),"d/M/yyyy", CultureInfo.InvariantCulture);
+
+                DateTime dob;
+
+                while (true)
+                {
+                    try
+                    {
+                        Console.Write("Enter Customer Date Of Birth (dd/MM/yyyy): ");
+                        dob = DateTime.ParseExact(Console.ReadLine(), "d/M/yyyy", null);
+                        break;
+                    }
+                    catch (FormatException)
+                    {
+                        // Input is not in the correct format
+                        Console.WriteLine("Invalid date format. Please enter the date in dd/MM/yyyy format. \n");
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"An error occurred: {ex.Message}\n");
+                    }
+                }
 
                 Customer customer = new Customer(name, id, dob);
                 PointCard pointCard = new PointCard(0, 0);
@@ -614,8 +632,7 @@ namespace ICTreats
                     x++;
                 }
 
-                Console.Write($"How many toppings would you like? (0 - {x-1})");
-                int totalToppings = int.Parse(Console.ReadLine());
+                int totalToppings = IntegerValidator($"How many toppings would you like? (0 - {x - 1})", x - 1, 0);
 
                 for (int i = 0; i < totalToppings; i++)
                 {
