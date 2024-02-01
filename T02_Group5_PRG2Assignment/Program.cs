@@ -435,7 +435,7 @@ namespace ICTreats
                 Customer retrievedCustomer = customerDict[id];
                 Order order = retrievedCustomer.MakeOrder();
 
-                order.timeReceived = DateTime.Today;
+                order.timeReceived = DateTime.Now;
                 order.id = orderDict.Values.Count() + 1 ;
 
                 AddIceCream(retrievedCustomer, maxScoops);
@@ -775,36 +775,10 @@ namespace ICTreats
                 Console.WriteLine("--------------------------");
                 Console.WriteLine($"Total Bill: ${TotalBill:F2}");
 
-                Customer foundCustomer = null;
-
-                foreach (var kvp in customerDict)
-                {
-                    Customer customer = kvp.Value;
-                    if (customer.currentOrder != null && customer.currentOrder.id == order.id)
-                    {
-                        foundCustomer = customer;
-                        break;
-                    }
-                    else if (customer.currentOrder == null)
-                    {
-                        // Check in order history
-                        Order pastOrder = customer.orderHistory.FirstOrDefault(pastOrders => pastOrders.id == order.id);
-                        if (pastOrder != null)
-                        {
-                            foundCustomer = customer;
-                            break;
-                        }
-                    }
-                }
-
-                if (foundCustomer == null)
-                {
-                    Console.WriteLine("Customer has zero orders.");
-                    return;
-                }
+                Customer customer = customerDict.FirstOrDefault(customerDict => customerDict.Value.currentOrder.id == order.id).Value;
 
                 // display customer's membership status and points
-                Console.WriteLine($"Membership Status: {foundCustomer.rewards.tier} \nPoints: {foundCustomer.rewards.points}");
+                Console.WriteLine($"Membership Status: {customer.rewards.tier} \nPoints: {customer.rewards.points}");
 
 
                 // find the most expensive ice cream
@@ -822,7 +796,7 @@ namespace ICTreats
 
                 // check if it is the customer's birthday
                 bool customerBirthday = false;
-                if (foundCustomer.IsBirthday() == true)
+                if (customer.IsBirthday() == true)
                 {
                     Console.WriteLine("Happy birthday!");
                     customerBirthday = true;
@@ -831,53 +805,65 @@ namespace ICTreats
 
                 
                 // check if customer completed punch card
-                if (foundCustomer.rewards.punchCard == 10)
-                {   
-                    if (customerBirthday == true && order.iceCreamList.Count == 1)
+                for (int i = 0; i < order.iceCreamList.Count; i++)
+                {
+                    if (customer.rewards.punchCard == 10)
                     {
-                        Console.WriteLine("Unable to use punch card as free ice cream for birthday is in use.");
-                    }
-                    // if it is customer's birthday and most expensive ice cream is the FIRST ice cream
-                    else if (customerBirthday == true && mostExpensiveIceCream == 0)
-                    {
-                        TotalBill -= order.iceCreamList[1].CalculatePrice();
-                    }
-                    else
-                    {
+                        if (customerBirthday == true && order.iceCreamList.Count == 1)
+                        {
+                            Console.WriteLine("Unable to use punch card as free ice cream for birthday is in use.");
+                            break;
+                        }
+                        // if it is customer's birthday and most expensive ice cream is the FIRST ice cream
+                        else if (customerBirthday == true && mostExpensiveIceCream == 0)
+                        {
+                            TotalBill -= order.iceCreamList[1].CalculatePrice();
+                            customer.rewards.Punch();  
+                            continue;
+                        }
                         TotalBill -= order.iceCreamList[0].CalculatePrice();
+                        customer.rewards.Punch();
+                        continue;
                     }
+                    customer.rewards.Punch();
                 }
 
                 // check if can redeem points
-                while (true)
+                if (TotalBill == 0)
                 {
-                    if (foundCustomer.rewards.tier != "Ordinary" && foundCustomer.rewards.points > 0)
-                    {
-                        Console.Write("You can redeem points, do you want to? (Y/N): ");
-                        string redeemAnswer = Console.ReadLine().Trim().ToUpper();
-
-                        if (redeemAnswer == "Y")
+                    Console.WriteLine($"Total bill is {TotalBill:F2}, unable to redeem points.");
+                }
+                else
+                {
+                    while (true)
+                    {   
+                        if (customer.rewards.tier != "Ordinary" && customer.rewards.points > 0)
                         {
-                            Console.Write($"You have {foundCustomer.rewards.points} points, how many do you want to redeem? ($0.02 = 1 point): ");
-                            int redeemPoints = int.Parse(Console.ReadLine());
+                            Console.Write("You can redeem points, do you want to? (Y/N): ");
+                            string redeemAnswer = Console.ReadLine().Trim().ToUpper();
 
-                            if (redeemPoints >= 0 && redeemPoints <= foundCustomer.rewards.points)
+                            if (redeemAnswer == "Y")
                             {
-                                TotalBill -= redeemPoints * 0.02;
-                                foundCustomer.rewards.RedeemPoints(redeemPoints);
-                            }
-                            else
-                            {
+                                Console.Write($"You have {customer.rewards.points} points, how many do you want to redeem? ($0.02 = 1 point): ");
+                                int redeemPoints = int.Parse(Console.ReadLine());
+
+                                // ensure enough positive points and not more than total amount to pay left
+                                if (redeemPoints >= 0 && redeemPoints <= customer.rewards.points && (redeemPoints * 0.02 <= TotalBill))
+                                {
+                                    TotalBill -= redeemPoints * 0.02;
+                                    customer.rewards.RedeemPoints(redeemPoints);
+                                    break;
+                                }
                                 Console.WriteLine("Unable to redeem more than the total points and value should be positive integer.");
                                 continue;
                             }
+                            else
+                            {
+                                break;
+                            }
                         }
-                        else
-                        {
-                            break;
-                        }
+                        break;
                     }
-                    break;
                 }
 
                 Console.WriteLine("--------------");
@@ -888,28 +874,25 @@ namespace ICTreats
 
                 Console.WriteLine("Payment successful!");
 
-                foundCustomer.rewards.Punch(); // reset to 0 if punchcard is 10, otherwise increase by 1
+                // current formula for point addition
+                customer.rewards.AddPoints((int)Math.Floor(TotalBill * 0.72)); 
 
-                foundCustomer.rewards.AddPoints((int)Math.Floor(TotalBill * 0.72)); // current formula for point addition
-
-                foundCustomer.currentOrder.timeFulfilled = DateTime.Today; 
+                customer.currentOrder.timeFulfilled = DateTime.Now; 
 
                 // store the costs for the specific month and year
-                string monthYearKey = foundCustomer.currentOrder.timeFulfilled.Value.ToString("MMM yyyy");
+                string monthYearKey = customer.currentOrder.timeFulfilled.Value.ToString("MMM yyyy");
 
                 if (monthYearDict.ContainsKey(monthYearKey))
                 {
                     monthYearDict[monthYearKey] += TotalBill;
+                    customer.currentOrder = null; // clear current order
+                    return;
                 }
-                else
-                {
-                    monthYearDict.Add(monthYearKey, TotalBill);
-                }
-
-                foundCustomer.currentOrder = null; // clear current order
+                monthYearDict.Add(monthYearKey, TotalBill);
+                customer.currentOrder = null; // clear current order
             }
 
-
+            // Option 8
             void DisplayMonthYearBreakdown()
             {
                 Console.Write("Enter the year: ");
@@ -919,40 +902,35 @@ namespace ICTreats
                     if (int.TryParse(Console.ReadLine(), out year))
                     {
                         // can be changed, up to system
-                        if (year >= 1950 && year <= 2050) { break; }
-                        else
-                        {
-                            Console.Write("Invalid input. Please enter a valid year: ");
+                        if (year >= 1950 && year <= 2050) 
+                        { 
+                            break; 
                         }
-
-                    }
-                    else
-                    {
                         Console.Write("Invalid input. Please enter a valid year: ");
+                        continue;
                     }
+                    Console.Write("Invalid input. Please enter a valid year: ");
                 }
                 double yearlyTotal = 0.00;
                 Console.WriteLine();
-                // Iterate over each month of the year
+                // print for each month
                 for (int month = 1; month <= 12; month++)
                 {
                     // Create a key for the month and year
                     string monthYearKey = new DateTime(year, month, 1).ToString("MMM yyyy");
 
-                    // Check if dict has the month and year already
+                    // chec if dict has the month and year already
                     if (monthYearDict.TryGetValue(monthYearKey, out double TotalMonthly))
                     {
                         Console.WriteLine($"{monthYearKey}: ${TotalMonthly:0.00}");
                         yearlyTotal += TotalMonthly;
+                        continue;
                     }
-                    else
-                    {
-                        // If the month does not have data, I print it as $0.00 
-                        Console.WriteLine($"{monthYearKey}: $0.00");
-                    }
+                    // if the month does not have data, I print it as $0.00 
+                    Console.WriteLine($"{monthYearKey}: $0.00");
                 }
 
-                // Print the total for the year
+                // print the total for the year
                 Console.WriteLine($"\nTotal for {year}: ${yearlyTotal:0.00}\n");
             }
         }
