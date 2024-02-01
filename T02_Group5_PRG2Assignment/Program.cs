@@ -221,7 +221,7 @@ namespace ICTreats
                         Order order;
 
                         // if order is not new
-                        if (customer.currentOrder != null && customer.currentOrder.timeReceived == DateTime.ParseExact(splitLine[2], "dd/MM/yyyy HH:mm", CultureInfo.InvariantCulture))
+                        if (customer.currentOrder != null && customer.currentOrder.id == int.Parse(splitLine[0]))
                         {
                             order = customer.currentOrder;
                         }
@@ -290,6 +290,7 @@ namespace ICTreats
                             if (toppingDict.TryGetValue(splitLine[i], out double cost))
                             {
                                 toppings.Add(new Topping(splitLine[i]));
+                                continue;
                             }
                             else if (string.IsNullOrEmpty(splitLine[i]))
                             {
@@ -297,7 +298,6 @@ namespace ICTreats
                             }
                             // if topping is not a valid option
                             Console.WriteLine("Error, no such topping available.");
-                            continue;
                         }
 
                         // checking if the option exists
@@ -324,6 +324,7 @@ namespace ICTreats
                         else
                         {
                             Console.WriteLine("Error, no such option available");
+                            return;
                         }
 
                         string monthYearKey = order.timeReceived.ToString("MMM yyyy");
@@ -390,13 +391,12 @@ namespace ICTreats
             // Option 3
             void RegisterCustomer()
             {
-                Console.Write("Enter a name: ");
-
                 string name;
                 while (true)
                 {
                     try
                     {
+                        Console.Write("Enter a name: ");
                         name = Console.ReadLine().Trim();
 
                         if (name == "")
@@ -404,7 +404,7 @@ namespace ICTreats
                             Console.WriteLine("Name cannot be empty!");
                             continue;
                         }
-                        else if (name.All(char.IsLetter))
+                        else if (!name.All(char.IsLetter))
                         {
                             Console.WriteLine("Name should only be alphabetic numbers!");
                             continue;
@@ -470,7 +470,29 @@ namespace ICTreats
                 DisplayAllCustomers();
 
                 Console.Write("Enter a customer ID to be retrieved: ");
-                int id = int.Parse(Console.ReadLine());
+                int id;
+                while (true)
+                {
+                    try
+                    {
+                        Console.Write("Enter a ID Number (6 digits): ");
+                        id = int.Parse(Console.ReadLine().Trim());
+                        if (customerDict.ContainsKey(id))
+                        {
+                            break;
+                        }
+                        Console.WriteLine("Customer not found!");
+                        continue;
+                    }
+                    catch (FormatException)
+                    {
+                        Console.WriteLine("Please enter 6 digits!");
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine(ex.Message);
+                    }
+                }
 
                 Customer retrievedCustomer = customerDict[id];
                 Order order = retrievedCustomer.MakeOrder();
@@ -542,8 +564,25 @@ namespace ICTreats
 
                 for (int i = 0; i < scoop; i++)
                 {
-                    Console.Write($"Enter the name of the flavour (no repeating): ");
-                    string flavour = Console.ReadLine().Trim().ToLower();
+                    string flavour = "";
+                    try
+                    {
+                        Console.Write("Enter the name of a flavour: ");
+                        flavour = Console.ReadLine().Trim().ToLower();
+
+                        if (flavour == "")
+                        {
+                            Console.WriteLine("Flavour cannot be empty!");
+                        }
+                        else if (!flavour.All(char.IsLetter))
+                        {
+                            Console.WriteLine("Please enter alphabets only!");
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine(ex.Message);
+                    }
 
                     // checks if flavour already selected by user
                     // returns null if its a new flavour, otherwise a reference to it
@@ -553,6 +592,7 @@ namespace ICTreats
                     if (flavourToUpdate != null)
                     {
                         flavourToUpdate.quantity += 1;
+                        continue;
                     }
                     else if (flavourDict.ContainsKey(flavour)) // new flavour and is an available option
                     {
