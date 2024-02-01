@@ -32,14 +32,10 @@ namespace ICTreats
            int maxScoop = 3;
            IceCream modifyIceCream = iceCreamList[id-1];
 
-
-           Console.WriteLine("[1] Modify option \n[2] Modify number of scoops \n[3] Modify flavours \n[4] Modify toppings" +
-                "\n[5] Modify dipped cone \n[6] Modify waffle flavour");
-           Console.Write("Enter the number for the modifications to make to the ice cream: ");
-
            try
            {
-               int modifyOption = int.Parse(Console.ReadLine());
+               int modifyOption = Program.IntegerValidator("[1] Modify option \n[2] Modify number of scoops \n[3] Modify flavours \n[4] Modify toppings" +
+                 "\n[5] Modify dipped cone \n[6] Modify waffle flavour \nEnter the number for the modifications to make to the ice cream: ", 6,1);
                switch (modifyOption)
                {
                    case 1:
@@ -84,67 +80,116 @@ namespace ICTreats
                     Console.WriteLine($"{Program.CapitalizeFirstLetter(option),-15}");
                 }
 
-                Console.Write("Enter the option you want: ");
-                string selectedOption = Console.ReadLine().Trim().ToLower();
-
-                if (Program.optionsAvailable.ContainsKey(selectedOption))
+                string selectedOption = "";
+                while (true)
                 {
-                    switch (selectedOption)
+                    try
                     {
-                        case "cup":
-                            iceCreamList[id - 1] = new Cup(selectedOption, modifyIceCream.scoops, modifyIceCream.flavours, modifyIceCream.toppings);
-                            Console.WriteLine("Ice Cream is now a Cup!");
-                            break;
-                        case "cone":
-                            Console.Write("Would you like to dip your cone? (Y/N): ");
-                            string dipped = Console.ReadLine().Trim().ToUpper();
+                        Console.Write("Enter the option you want: ");
+                        selectedOption = Console.ReadLine().Trim().ToLower();
 
-                            if (dipped == "Y")
-                            {
-                                iceCreamList[id - 1] = new Cone(selectedOption, modifyIceCream.scoops, modifyIceCream.flavours, modifyIceCream.toppings, true);
-                                Console.WriteLine("Ice Cream is now a dipped Cone!");
-                                break;
-                            }
-                            iceCreamList[id - 1] = new Cone(selectedOption, modifyIceCream.scoops, modifyIceCream.flavours, modifyIceCream.toppings, false);
-                            Console.WriteLine("Ice Cream is now a regular Cone!");
+                        if (selectedOption == "")
+                        {
+                            Console.WriteLine("Selected option cannot be empty!");
+                            continue;
+                        }
+                        else if (!Program.optionsAvailable.Keys.Contains(selectedOption))
+                        {
+                            Console.WriteLine("Not a valid option!");
+                            continue;
+                        }
+                        break;
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine("Error: " + ex.Message);
+                    }
+                }
+
+                switch (selectedOption)
+                {
+                    case "cup":
+                        iceCreamList[id - 1] = new Cup(selectedOption, modifyIceCream.scoops, modifyIceCream.flavours, modifyIceCream.toppings);
+                        Console.WriteLine("Ice Cream is now a Cup!");
+                        break;
+                    case "cone":
+                        Console.Write("Would you like to dip your cone? (Y/N): ");
+                        string dipped = Console.ReadLine().Trim().ToUpper();
+
+                        if (dipped == "Y")
+                        {
+                            iceCreamList[id - 1] = new Cone(selectedOption, modifyIceCream.scoops, modifyIceCream.flavours, modifyIceCream.toppings, true);
+                            Console.WriteLine("Ice Cream is now a dipped Cone!");
                             break;
-                        case "waffle":
-                            while (true)
+                        }
+                        iceCreamList[id - 1] = new Cone(selectedOption, modifyIceCream.scoops, modifyIceCream.flavours, modifyIceCream.toppings, false);
+                        Console.WriteLine("Ice Cream is now a regular Cone!");
+                        break;
+                    case "waffle":
+                        while (true)
+                        {
+                            Console.Write("Would you like to add-on a flavour for your waffle? (Y/N): ");
+                            string waffleFlavourAnswer = Console.ReadLine().Trim().ToUpper();
+                            if (waffleFlavourAnswer == "Y")
                             {
-                                Console.Write("Would you like to add-on a flavour for your waffle? (Y/N): ");
-                                string waffleFlavourAnswer = Console.ReadLine().Trim().ToUpper();
-                                if (waffleFlavourAnswer == "Y")
+                                Console.WriteLine("Waffle Flavours available: ");
+                                foreach (KeyValuePair<string, double> flavourAndCost in Program.waffleFlavour)
                                 {
-                                    Console.WriteLine("Waffle Flavours available: ");
-                                    foreach (KeyValuePair<string, double> flavourAndCost in Program.waffleFlavour)
+                                    if (flavourAndCost.Value > 0)
                                     {
-                                        if (flavourAndCost.Value > 0)
+                                        Console.WriteLine(Program.CapitalizeFirstLetter(flavourAndCost.Key));
+                                        continue;
+                                    }
+                                }
+
+                                string selectedWaffleFlavour = "";
+                                while (true)
+                                {
+                                    try
+                                    {
+                                        Console.Write("Enter the waffle flavour you want: ");
+                                        selectedOption = Console.ReadLine().Trim().ToLower();
+
+                                        if (selectedOption == "")
                                         {
-                                            Console.WriteLine(Program.CapitalizeFirstLetter(flavourAndCost.Key));
+                                            Console.WriteLine("Selected waffle flavour cannot be empty!");
                                             continue;
                                         }
-                                    }
-
-                                    Console.Write("Enter the waffle flavour you want: ");
-                                    string selectedWaffleFlavour = Console.ReadLine().Trim().ToLower();
-
-                                    if (Program.waffleFlavour.ContainsKey(selectedWaffleFlavour) && selectedWaffleFlavour != "original")
-                                    {
-                                        iceCreamList[id - 1] = new Waffle(selectedOption, modifyIceCream.scoops, modifyIceCream.flavours, modifyIceCream.toppings, selectedWaffleFlavour);
+                                        else if (selectedOption == "original")
+                                        {
+                                            Console.WriteLine("Selected waffle flavour cannot be original!");
+                                            continue;
+                                        }
+                                        else if (!Program.waffleFlavour.Keys.Contains(selectedOption))
+                                        {
+                                            Console.WriteLine("Not a valid option!");
+                                            continue;
+                                        }
                                         break;
                                     }
-                                    Console.WriteLine("Enter a valid waffle flavour!");
-                                    continue;
+                                    catch (Exception ex)
+                                    {
+                                        Console.WriteLine("Error: " + ex.Message);
+                                    }
                                 }
-                                else if (waffleFlavourAnswer == "N")
+
+                                // if flavour is not original
+                                if (selectedWaffleFlavour != "original")
                                 {
-                                    iceCreamList[id - 1] = new Waffle(selectedOption, modifyIceCream.scoops, modifyIceCream.flavours, modifyIceCream.toppings, "original");
+                                    iceCreamList[id - 1] = new Waffle(selectedOption, modifyIceCream.scoops, modifyIceCream.flavours, modifyIceCream.toppings, selectedWaffleFlavour);
                                     break;
                                 }
-                                Console.WriteLine("Enter 'Y' for Yes, 'N' for No!");
+                                Console.WriteLine("Enter a valid waffle flavour!");
+                                continue;
                             }
-                            break;
-                    }
+                            else if (waffleFlavourAnswer == "N")
+                            {
+                                iceCreamList[id - 1] = new Waffle(selectedOption, modifyIceCream.scoops, modifyIceCream.flavours, modifyIceCream.toppings, "original");
+                                break;
+                            }
+                            Console.WriteLine("Enter 'Y' for Yes, 'N' for No!");
+                        }
+                        break;
                 }
             }
             
@@ -155,6 +200,8 @@ namespace ICTreats
                 int scoop = int.Parse(Console.ReadLine()); // validate it to be between 1 and/or = maxscoop
 
                 modifyIceCream.scoops = scoop;
+
+                ModifyFlavours();
                 return;
             }
 
@@ -175,7 +222,7 @@ namespace ICTreats
                 }
 
                 // change each flavour for the number of flavours available 
-                for (int i = 0; i < modifyIceCream.flavours.Count; i++)
+                for (int i = 0; i < modifyIceCream.scoops; i++)
                 {
                     Console.Write($"Enter new flavour for flavour {i+1}: ");
 
@@ -228,8 +275,13 @@ namespace ICTreats
                 {
                     Console.Write($"Enter the new topping for topping {i+1}");
                     string topping = Console.ReadLine().Trim().ToLower();
-
-                    if (Program.toppingDict.TryGetValue(topping, out double value) == true)
+                    if (topping == "")
+                    {
+                        Console.WriteLine("Topping chosen cannot be empty!");
+                        i--;
+                        continue;
+                    }
+                    else if (Program.toppingDict.TryGetValue(topping, out double value) == true)
                     {
                         modifyIceCream.toppings[i] = new Topping(topping);
                         Console.WriteLine("Topping has been successfully modified.");
@@ -251,34 +303,24 @@ namespace ICTreats
                     return;
                 }
 
-                string dipAnswer;
-                if (((Cone)modifyIceCream).dipped == true)
+                Console.Write("Do you want to dip your cone? (Y/N): ");
+
+                string dipAnswer = "";
+                while (true)
                 {
-                    Console.Write("Would you like to NOT dip your cone? (Y/N)");
-                    dipAnswer = Console.ReadLine().Trim().ToUpper();
+                    dipAnswer = Program.YesNoValidator(dipAnswer);
 
                     if (dipAnswer == "Y")
                     {
-                        ((Cone)modifyIceCream).dipped = false;
-                        Console.WriteLine("Cone is no longer dipped.");
-                        return;
+                        ((Cone)modifyIceCream).dipped = true;
+                        break;
                     }
-                    Console.WriteLine("Cone is still dipped.");
-                    return; 
+                    else if (dipAnswer == "N")
+                    {
+                        ((Cone)modifyIceCream).dipped = false;
+                        break;
+                    }
                 }
-
-                Console.Write("Would you like to dip your cone? (Y/N): ");
-                dipAnswer = Console.ReadLine().Trim().ToUpper();
-
-                if (dipAnswer == "Y")
-                {
-                    ((Cone)modifyIceCream).dipped = true;
-                    Console.Write("Cone is now dipped.");
-                    return;
-                }
-
-                Console.WriteLine("Cone is still not dipped.");
-                return;
             }
 
             void ModifyWaffleFlavour()

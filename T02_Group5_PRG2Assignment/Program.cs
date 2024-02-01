@@ -10,6 +10,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.SymbolStore;
 using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Reflection.Metadata.Ecma335;
 using System.Text;
@@ -476,7 +477,7 @@ namespace ICTreats
 
                 using (StreamWriter sw = new StreamWriter("customers.csv", true))
                 {
-                    sw.WriteLine($"{customer.name},{customer.memberid},{customer.dob},Ordinary,0,0");
+                    sw.WriteLine($"{customer.name},{customer.memberid},{customer.dob.ToShortDateString()},Ordinary,0,0");
                 }
 
                 Console.WriteLine("Registration successful!");
@@ -489,7 +490,6 @@ namespace ICTreats
             {
                 DisplayAllCustomers();
 
-                Console.Write("Enter a customer ID to be retrieved: ");
                 int id;
                 while (true)
                 {
@@ -515,6 +515,13 @@ namespace ICTreats
                 }
 
                 Customer retrievedCustomer = customerDict[id];
+
+                if (retrievedCustomer.currentOrder != null)
+                {
+                    Console.WriteLine("Customer currently has an order!");
+                    return;
+                }
+
                 Order order = retrievedCustomer.MakeOrder();
 
                 order.timeReceived = DateTime.Now;
@@ -536,7 +543,6 @@ namespace ICTreats
                     {
                         break;
                     }
-                    Console.WriteLine("Please enter 'Y' for Yes, 'N' for No!");
                 }
 
                 // add it to dictionary
@@ -565,11 +571,35 @@ namespace ICTreats
                     Console.WriteLine($"Option {x}: {CapitalizeFirstLetter(iceCream)}");
                     x++;
                 }
-                Console.Write("Enter your option (name): ");
-                string option = Console.ReadLine().Trim();
 
-                Console.Write($"Enter the number of scoops you want, from 1 - {maxScoop} scoops: ");
-                int scoop = int.Parse(Console.ReadLine());
+                string option = "";
+                while (true)
+                {
+                    try
+                    {
+                        Console.Write("Enter your option (name): ");
+                        option = Console.ReadLine().Trim();
+
+                        if (option == "")
+                        {
+                            Console.WriteLine("Please enter an option!");
+                            continue;
+                        }
+                        else if (optionsAvailable.ContainsKey(option) == false)
+                        {
+                            Console.WriteLine("Please enter a valid option!");
+                            continue;   
+                        }
+                        break;
+                    }
+                    catch(Exception ex)
+                    {
+
+                    }
+                }
+                    
+                   
+                int scoop = IntegerValidator($"Enter the number of scoops you want, from 1 - {maxScoop} scoops: ", maxScoop, 1);
 
                 // list out the available flavours
                 foreach (KeyValuePair<string,bool> flavour in flavourDict)
@@ -593,15 +623,15 @@ namespace ICTreats
                         if (flavour == "")
                         {
                             Console.WriteLine("Flavour cannot be empty!");
-                        }
-                        else if (!flavour.All(char.IsLetter))
-                        {
-                            Console.WriteLine("Please enter alphabets only!");
+                            i--;
+                            continue;
                         }
                     }
                     catch (Exception ex)
                     {
                         Console.WriteLine(ex.Message);
+                        i--;
+                        continue;
                     }
 
                     // checks if flavour already selected by user
@@ -634,7 +664,7 @@ namespace ICTreats
                     x++;
                 }
 
-                int totalToppings = IntegerValidator($"How many toppings would you like? (0 - {x - 1})", x - 1, 0);
+                int totalToppings = IntegerValidator($"How many toppings would you like? (0 - {x - 1}): ", x - 1, 0);
 
                 for (int i = 0; i < totalToppings; i++)
                 {
@@ -672,11 +702,12 @@ namespace ICTreats
                         break;
                     case "cone":
                         Console.Write("Would you like to upgrade your ice cream cone to chocolate-dipped cone? (Y/N): ");
-                        string dippedAnswer = YesNoValidator(Console.ReadLine().Trim().ToUpper());
+                        string dippedAnswer = "";
 
                         bool dipped;
                         while(true)
                         {
+                            dippedAnswer = YesNoValidator(Console.ReadLine().Trim().ToUpper());
                             if (dippedAnswer == "Y")
                             {
                                 dipped = true;
@@ -687,7 +718,6 @@ namespace ICTreats
                                 dipped = false;
                                 break;
                             }
-                            Console.WriteLine("Enter 'Y' for Yes and 'N' for No!");
                         }
 
                         IceCream iceCreamCone = new Cone(option, scoop, flavourList, toppingList, dipped);
@@ -710,9 +740,24 @@ namespace ICTreats
                                         Console.WriteLine(CapitalizeFirstLetter(flavourAndCost.Key));
                                     }
                                 }
+                                string selectedWaffleFlavour = "";
 
-                                Console.Write("Enter the waffle flavour you want: ");
-                                string selectedWaffleFlavour = Console.ReadLine().Trim().ToLower();
+                                try
+                                {
+                                    Console.Write("Enter the waffle flavour you want: ");
+                                    selectedWaffleFlavour = Console.ReadLine().Trim().ToLower();
+
+                                    if (selectedWaffleFlavour == "")
+                                    {
+                                        Console.WriteLine("Waffle flavour cannot be empty!");
+                                        continue;
+                                    }
+                                }
+                                catch(Exception ex)
+                                {
+                                    Console.WriteLine("Error: " + ex.Message);
+                                    continue;
+                                }
                                 
                                 // might not need original check here, see how later
                                 if (waffleFlavour.ContainsKey(selectedWaffleFlavour) && selectedWaffleFlavour != "original")
@@ -774,10 +819,31 @@ namespace ICTreats
             {
                 DisplayAllCustomers();
 
-                Console.Write("Select a customer by ID: ");
+                int id;
+                while (true)
+                {
+                    try
+                    {
+                        Console.Write("Enter a ID Number (6 digits): ");
+                        id = int.Parse(Console.ReadLine().Trim());
+                        if (customerDict.ContainsKey(id))
+                        {
+                            break;
+                        }
+                        Console.WriteLine("Customer not found!");
+                        continue;
+                    }
+                    catch (FormatException)
+                    {
+                        Console.WriteLine("Please enter 6 digits!");
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine(ex.Message);
+                    }
+                }
 
-                // ahmed u can seperate for validation if uw
-                Customer selectedCustomer = customerDict[int.Parse(Console.ReadLine())]; 
+                Customer selectedCustomer = customerDict[id]; 
 
                 if (selectedCustomer.currentOrder == null)
                 {
@@ -787,18 +853,15 @@ namespace ICTreats
 
                 ListIceCream(selectedCustomer.currentOrder);
 
-                Console.WriteLine("[1] Modify an existing ice cream \n[2] Add new ice cream to order \n[3] Delete existing ice cream from order \n[0] Exit to main menu");
-
-                Console.Write("Choose one of the options above: ");
-                int option = int.Parse(Console.ReadLine());
+                Console.WriteLine("Choose one of the options below:");
+                int option = IntegerValidator("[1] Modify an existing ice cream \n[2] Add new ice cream to order \n[3] Delete existing ice cream from order \n[0] Exit to main menu\n", 3, 0);
 
                 switch (option)
                 {
                     case 0: // exit 
                         break;
                     case 1:
-                        Console.Write("Select the numerical value of the ice cream to modify: ");
-                        int selectedIceCreamNumber = int.Parse(Console.ReadLine());
+                        int selectedIceCreamNumber = IntegerValidator("Select the numerical value of the ice cream to modify: ",selectedCustomer.currentOrder.iceCreamList.Count(),1);
 
                         selectedCustomer.currentOrder.ModifyIceCream(selectedIceCreamNumber);
 
@@ -874,10 +937,18 @@ namespace ICTreats
                 Console.WriteLine("--------------------------");
                 Console.WriteLine($"Total Bill: ${TotalBill:F2}");
 
-                Customer customer = customerDict.FirstOrDefault(customerDict => customerDict.Value.currentOrder.id == order.id).Value;
-
-                // need add validation for customer?
-
+                Customer customer = null;
+                foreach (Customer customers in customerDict.Values)
+                {
+                    if (customers.currentOrder != null)
+                    {
+                        if (customers.currentOrder.id == order.id)
+                        {
+                            customer = customers;
+                            break;
+                        }
+                    }
+                }
 
                 // display customer's membership status and points
                 Console.WriteLine($"Membership Status: {customer.rewards.tier} \nPoints: {customer.rewards.points}");
@@ -1045,44 +1116,41 @@ namespace ICTreats
                 // print the total for the year
                 Console.WriteLine($"\nTotal for {year}: ${yearlyTotal:0.00}\n");
             }
+        }
 
-            string YesNoValidator(string input)
-            {   
-                while (true)
-                {
-                    if (input != "Y" || input != "N")
-                    {
-                        Console.Write("Please enter Y for Yes, N for No : ");
-                    }
-                    return input;
-                }
+    public static string YesNoValidator(string input)
+        {
+            if (input != "Y" && input != "N")
+            {
+                Console.Write("\nPlease enter Y for Yes, N for No : ");
             }
+            return input;
+        }
 
-            int IntegerValidator(string prompt, int upperLimit, int lowerLimit)
-            {   
-                while(true)
+    public static int IntegerValidator(string prompt, int upperLimit, int lowerLimit)
+    {
+        while (true)
+        {
+            try
+            {
+                Console.Write(prompt);
+                int parsedInput = int.Parse(Console.ReadLine().Trim());
+
+                if (parsedInput <= upperLimit && parsedInput >= lowerLimit)
                 {
-                    try
-                    {
-                        Console.Write(prompt);
-                        int parsedInput = int.Parse(Console.ReadLine().Trim());
-
-                        if (parsedInput <= upperLimit && parsedInput >= lowerLimit)
-                        {
-                            return parsedInput;
-                        }
-                        Console.WriteLine($"Please enter a valid integer from {lowerLimit} to {upperLimit}");
-                    }
-                    catch (FormatException)
-                    {
-                        Console.WriteLine($"Please enter a valid integer from {lowerLimit} to {upperLimit}");
-                    }
-                    catch (Exception ex)
-                    {
-                        Console.WriteLine(ex.Message);
-                    }
+                    return parsedInput;
                 }
+                Console.WriteLine($"Please enter a valid integer from {lowerLimit} to {upperLimit}");
+            }
+            catch (FormatException)
+            {
+                Console.WriteLine($"Please enter a valid integer from {lowerLimit} to {upperLimit}");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
             }
         }
+    }
     }
 }
