@@ -84,8 +84,7 @@ namespace ICTreats
                     "\n[4] Create a new customer's order \n[5] Display order details of a customer \n[6] Modify order details " +
                     "\n[7] Process order and checkout \n[8] Display monthly charged amounts breakdown & total charged amounts for the year \n[0] Exit program");
                 Console.WriteLine("===================================");
-                Console.Write("Enter your option: ");
-                option = int.Parse(Console.ReadLine());
+                option = IntegerValidator("Enter your option: ", 8, 0);
 
                 switch (option)
                 {
@@ -132,7 +131,7 @@ namespace ICTreats
                     {
                         // Split into elements and remove all leading or trailing whitespace
                         string[] splitLine = line.Split(',').Select(s => s.Trim().ToLower()).ToArray();
-                        Customer customer = new Customer(splitLine[0], int.Parse(splitLine[1]), DateTime.ParseExact(splitLine[2], "d/M/yyyy", CultureInfo.InvariantCulture));
+                        Customer customer = new Customer(splitLine[0], int.Parse(splitLine[1]), DateTime.ParseExact(splitLine[2], "dd/MM/yyyy" ,null));
                         customer.rewards = new PointCard(int.Parse(splitLine[4]), int.Parse(splitLine[5]));
                         customerDict.Add(customer.memberid, customer);
                     }
@@ -392,20 +391,61 @@ namespace ICTreats
             void RegisterCustomer()
             {
                 Console.Write("Enter a name: ");
-                string name = Console.ReadLine().Trim();
-                Console.Write("Enter a ID Number (6 digits): ");
-                int id = int.Parse(Console.ReadLine());
 
-                if (customerDict.ContainsKey(id))
+                string name;
+                while (true)
                 {
-                    Console.WriteLine("ID already exists!");
-                    return;
+                    try
+                    {
+                        name = Console.ReadLine().Trim();
+
+                        if (name == "")
+                        {
+                            Console.WriteLine("Name cannot be empty!");
+                            continue;
+                        }
+                        else if (name.All(char.IsLetter))
+                        {
+                            Console.WriteLine("Name should only be alphabetic numbers!");
+                            continue;
+                        }
+                        break;
+                    }
+                    catch (Exception ex) 
+                    {
+                        Console.WriteLine(ex.Message);
+                    }
                 }
-                else if (Convert.ToString(id).Length != 6)
-                {
-                    Console.WriteLine("ID is not 6 digits long!");
-                    return;
+
+                int id;
+                while (true)
+                {   
+                    try
+                    {
+                        Console.Write("Enter a ID Number (6 digits): ");
+                        id = int.Parse(Console.ReadLine().Trim());
+                        if (customerDict.ContainsKey(id))
+                        {
+                            Console.WriteLine("ID already exists!");
+                            continue;
+                        }
+                        else if (Convert.ToString(id).Length != 6)
+                        {
+                            Console.WriteLine("ID is not 6 digits long!");
+                            continue;
+                        }
+                        break;
+                    }
+                    catch (FormatException)
+                    {
+                        Console.WriteLine("Please enter 6 digits!");
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine(ex.Message);
+                    }
                 }
+                   
 
                 Console.Write("Enter your date of birth (in dd/MM/yyyy format): ");
                 DateTime dob = DateTime.ParseExact(Console.ReadLine(),"d/M/yyyy", CultureInfo.InvariantCulture);
@@ -443,7 +483,7 @@ namespace ICTreats
                 while (true)
                 {
                     Console.Write("Would you like to add another ice cream to the order? (Y/N): ");
-                    string addAnotherAnswer = Console.ReadLine().Trim().ToUpper();
+                    string addAnotherAnswer = YesNoValidator(Console.ReadLine().Trim().ToUpper());
 
                     if (addAnotherAnswer == "Y")
                     {
@@ -573,7 +613,7 @@ namespace ICTreats
                         break;
                     case "cone":
                         Console.Write("Would you like to upgrade your ice cream cone to chocolate-dipped cone? (Y/N): ");
-                        string dippedAnswer = Console.ReadLine().Trim().ToUpper();
+                        string dippedAnswer = YesNoValidator(Console.ReadLine().Trim().ToUpper());
 
                         bool dipped;
                         while(true)
@@ -600,7 +640,7 @@ namespace ICTreats
                         while (true)
                         {
                             Console.Write("Would you like to add-on a flavour for your waffle? (Y/N): ");
-                            string waffleFlavourAnswer = Console.ReadLine().Trim().ToUpper();
+                            string waffleFlavourAnswer = YesNoValidator(Console.ReadLine().Trim().ToUpper());
                             if (waffleFlavourAnswer == "Y")
                             {
                                 Console.WriteLine("Waffle Flavours available: ");
@@ -777,6 +817,9 @@ namespace ICTreats
 
                 Customer customer = customerDict.FirstOrDefault(customerDict => customerDict.Value.currentOrder.id == order.id).Value;
 
+                // need add validation for customer?
+
+
                 // display customer's membership status and points
                 Console.WriteLine($"Membership Status: {customer.rewards.tier} \nPoints: {customer.rewards.points}");
 
@@ -808,9 +851,10 @@ namespace ICTreats
                 for (int i = 0; i < order.iceCreamList.Count; i++)
                 {
                     if (customer.rewards.punchCard == 10)
-                    {
+                    {   
+                        // use the punchcard next time
                         if (customerBirthday == true && order.iceCreamList.Count == 1)
-                        {
+                        {   
                             Console.WriteLine("Unable to use punch card as free ice cream for birthday is in use.");
                             break;
                         }
@@ -821,6 +865,7 @@ namespace ICTreats
                             customer.rewards.Punch();  
                             continue;
                         }
+                        // first icecream in list is free
                         TotalBill -= order.iceCreamList[0].CalculatePrice();
                         customer.rewards.Punch();
                         continue;
@@ -840,7 +885,7 @@ namespace ICTreats
                         if (customer.rewards.tier != "Ordinary" && customer.rewards.points > 0)
                         {
                             Console.Write("You can redeem points, do you want to? (Y/N): ");
-                            string redeemAnswer = Console.ReadLine().Trim().ToUpper();
+                            string redeemAnswer = YesNoValidator(Console.ReadLine().Trim().ToUpper());
 
                             if (redeemAnswer == "Y")
                             {
@@ -857,10 +902,7 @@ namespace ICTreats
                                 Console.WriteLine("Unable to redeem more than the total points and value should be positive integer.");
                                 continue;
                             }
-                            else
-                            {
-                                break;
-                            }
+                            break;
                         }
                         break;
                     }
@@ -932,6 +974,44 @@ namespace ICTreats
 
                 // print the total for the year
                 Console.WriteLine($"\nTotal for {year}: ${yearlyTotal:0.00}\n");
+            }
+
+            string YesNoValidator(string input)
+            {   
+                while (true)
+                {
+                    if (input != "Y" || input != "N")
+                    {
+                        Console.Write("Please enter Y for Yes, N for No : ");
+                    }
+                    return input;
+                }
+            }
+
+            int IntegerValidator(string prompt, int upperLimit, int lowerLimit)
+            {   
+                while(true)
+                {
+                    try
+                    {
+                        Console.Write(prompt);
+                        int parsedInput = int.Parse(Console.ReadLine().Trim());
+
+                        if (parsedInput <= upperLimit && parsedInput >= lowerLimit)
+                        {
+                            return parsedInput;
+                        }
+                        Console.WriteLine($"Please enter a valid integer from {lowerLimit} to {upperLimit}");
+                    }
+                    catch (FormatException ex)
+                    {
+                        Console.WriteLine($"Please enter a valid integer from {lowerLimit} to {upperLimit}");
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine(ex.Message);
+                    }
+                }
             }
         }
     }

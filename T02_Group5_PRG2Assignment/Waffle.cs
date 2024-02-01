@@ -36,7 +36,7 @@ namespace ICTreats
                     TotalPrice += 7.00;
 
                     for (int i = 0; i < scoops; i++)
-                    {
+                    {   
                         if (flavours[i].premium == true)
                         {
                             TotalPrice += 2.00;
